@@ -76,7 +76,9 @@ const VoiceControls = styled.div`
   align-items: center;
 `;
 
-const VoiceButton = styled.button<{ isActive: boolean; variant?: 'primary' | 'secondary' }>`
+const VoiceButton = styled.button.withConfig({
+  shouldForwardProp: (prop) => !['isActive'].includes(prop)
+})<{ isActive: boolean; variant?: 'primary' | 'secondary' }>`
   width: 80px;
   height: 80px;
   border-radius: 50%;
@@ -242,6 +244,27 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     };
   }, [permission]);
 
+  // Cargar voces disponibles
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log('🗣️ Voces cargadas:', voices.length);
+      }
+    };
+    
+    // Las voces pueden cargarse de forma asíncrona
+    if (speechSynthesis.getVoices().length === 0) {
+      speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } else {
+      loadVoices();
+    }
+    
+    return () => {
+      speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+    };
+  }, []);
+
   // Auto-leer pregunta
   useEffect(() => {
     if (autoReadQuestion && geminiService?.connected && question && !hasReadQuestion) {
@@ -271,11 +294,37 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     
     try {
       setStatus('speaking');
-      // Usar síntesis de voz del navegador para leer la pregunta
+      
+      // Buscar una voz en español más natural
+      const voices = speechSynthesis.getVoices();
+      console.log('🗣️ Voces disponibles:', voices.map(v => `${v.name} (${v.lang})`));
+      
+      // Priorizar voces colombianas, luego españolas, luego cualquier español
+      const preferredVoice = voices.find(voice => 
+        voice.lang.includes('es-CO') || voice.lang.includes('es-MX') || voice.lang.includes('es-AR')
+      ) || voices.find(voice => 
+        voice.lang.includes('es-ES')
+      ) || voices.find(voice => 
+        voice.lang.startsWith('es')
+      );
+      
       const utterance = new SpeechSynthesisUtterance(question);
-      utterance.lang = 'es-ES';
-      utterance.rate = 0.9;
+      utterance.lang = 'es-CO'; // Colombiano si está disponible
+      utterance.rate = 0.85; // Más lento para mejor comprensión
+      utterance.pitch = 1.0; // Tono natural
+      utterance.volume = 0.8; // Volumen cómodo
+      
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+        console.log('🗣️ Usando voz:', preferredVoice.name, preferredVoice.lang);
+      }
+      
       utterance.onend = () => setStatus('idle');
+      utterance.onerror = (error) => {
+        console.error('❌ Error en síntesis de voz:', error);
+        setStatus('idle');
+      };
+      
       speechSynthesis.speak(utterance);
     } catch (error) {
       console.error('❌ Error leyendo pregunta:', error);
@@ -284,7 +333,20 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   };
 
   const startListening = async () => {
-    if (!stream || !geminiService?.connected) return;
+    console.log('🎙️ Intentando iniciar grabación...');
+    console.log('- Stream disponible:', !!stream);
+    console.log('- Gemini conectado:', geminiService?.connected);
+    console.log('- Estado de permisos:', permission);
+    
+    if (!stream) {
+      console.error('❌ No hay stream disponible');
+      return;
+    }
+    
+    if (!geminiService?.connected) {
+      console.error('❌ Gemini no está conectado');
+      return;
+    }
     
     try {
       setIsListening(true);
@@ -362,11 +424,13 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   };
 
   // Si no hay permisos, mostrar solicitud
-  if (permission !== 'granted') {
+  if (permission !== 'granted' || !stream) {
     return (
       <InterfaceContainer>
         <AudioPermissionRequest 
-          onPermissionGranted={() => console.log('Permisos concedidos')}
+          onPermissionGranted={(grantedStream) => {
+            console.log('🎙️ Permisos concedidos en GeminiVoiceInterface', !!grantedStream);
+          }}
           onSkip={onSkip}
         />
       </InterfaceContainer>
