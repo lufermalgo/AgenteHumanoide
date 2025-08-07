@@ -1,0 +1,183 @@
+---
+alwaysApply: true
+---
+current day: Aug 7 2025
+
+# Context Engineering para el Agente Humanoide de Encuesta por Voz (Summan SAS)
+
+## Propósito del Proyecto
+
+Desarrollar un agente humanoide interactivo con capacidad de voz, que funcione como guía personalizada para un assessment de conocimiento general en IA generativa dentro de la organización Summan SAS. El objetivo es que cada persona (≈75 usuarios) realice una única sesión con el agente entre el 11 y 15 de agosto de 2025. Las respuestas recolectadas permitirán construir una línea base de entendimiento para estrategias de capacitación y adopción.
+
+Este agente debe ser amigable, empático, y guiar la conversación sin dar opiniones o retroalimentación. Debe invitar a la honestidad y naturalidad del usuario, y mantener el foco del assessment sin desviarse por preguntas irrelevantes.
+
+El propósito final es impulsar una transformación cultural basada en IA, con enfoque humano, donde cada usuario se sienta escuchado y valorado, y donde el agente actúe como un puente entre tecnología y empatía.
+
+---
+
+## Reglas y Directivas Generales
+
+1. **El agente nunca responde preguntas fuera del propósito de la encuesta.** Redirige con amabilidad.
+2. **No se permite rehacer el assessment.** Cada usuario puede hacerlo solo una vez.
+3. **El agente debe identificar cuándo una respuesta es suficiente** y sugerir continuar, pero también validar si el usuario quiere aportar algo más.
+4. **Las preguntas deben mostrarse en pantalla (modo texto)** además de ser leídas en voz por el avatar.
+5. **La interacción debe completarse en 5-10 minutos.** Si el usuario se extiende en una respuesta, el agente debe notificarle el límite y cerrar ese bloque con elegancia.
+6. **Si el avatar no se carga, usar fallback UI estilo Open WebUI (solo voz/texto).**
+7. **Debe existir la capacidad de reanudar una encuesta inconclusa.**
+8. **Toda la experiencia debe mantener un estilo natural, cercano y ligeramente paisa (colombiano), sin exageraciones.**
+9. **Siempre que sea posible, el agente debe usar el nombre preferido del usuario.**
+10. **El agente no interrumpe innecesariamente al usuario, pero sí regula el tiempo de respuesta para no superar los límites establecidos.**
+
+---
+
+## Recolección de Datos (por sesión)
+
+* ID único de sesión (sessionId)
+* Timestamp de inicio y fin
+* Nombre del usuario (obtenido por login con Google)
+* Preferencia de nombre (si tiene dos)
+* Cargo y rol en la empresa (respuesta libre inicial)
+* Lista de preguntas realizadas
+
+  * Para cada pregunta:
+
+    * ID de pregunta
+    * Timestamp
+    * Texto de la pregunta
+    * Respuesta del usuario (texto transcrito)
+    * Confirmación de cierre
+* Estado de la encuesta (completa, incompleta)
+* Posible reanudación de sesión anterior (marcada como recuperada)
+
+---
+
+## Stack Tecnológico Validado
+
+### Frontend
+
+* **Diseño:** Figma + Figma Make (para prototipado ágil con prompts)
+* **Framework:** ReactJS
+* **Deploy:** Firebase Hosting
+
+### Backend
+
+* **Infraestructura:** Firebase Functions + Firestore DB
+* **Procesamiento de voz a texto:** Gemini Live API (Google)
+* **Generación de audio + gesticulación:** D-ID API (avatar en streaming)
+* **GCP:** Credenciales configuradas (proyecto: genai-385616, cuenta: fmaldonado@summan.com)
+
+### Autenticación y flujo
+
+* Login con Google para identificar al usuario
+* Al iniciar, capturar nombre y preguntar por preferencia de llamado
+* Iniciar el agente humanoide con saludo personalizado y breve introducción
+
+### Inspiración y Componentes Reutilizables
+
+**Acelerar desarrollo aprovechando proyectos existentes:**
+
+* **Open WebUI:**
+  * STT y TTS ya integrados: usar esa lógica y adaptarla con autenticación y control de flujo
+  * Interfaz de "voice mode": paradigma de interacción humana-IA usando voz ya probado
+  * Gestión modular de servicios: arquitectura extensible con plugins y configuración de APIs STT/TTS externas
+
+* **ChatGPT Voice Live:**
+  * Patrones de UX para conversación por voz
+  * Flujo de dictado y respuesta en tiempo real
+  * Manejo de estados de conversación (escuchando, procesando, respondiendo)
+
+**Estrategia:** Inspirarse en patrones probados, no copiar línea por línea. Adaptar componentes existentes al contexto específico del assessment.
+
+**Disponibilidad:** El proyecto Open WebUI está clonado localmente en `@open-webui/` para consulta y referencia durante el desarrollo.
+
+---
+
+## Plan de Trabajo (Microentregables Diarios)
+
+> ⚠️ Fecha límite de entrega: 11 de agosto de 2025. Dividir tareas en unidades de máximo 1 día de trabajo.
+
+1. **Diseño UI en Figma**
+
+   * Diseño responsivo (avatar a la derecha, pregunta en texto a la izquierda)
+   * Animación de transición entre preguntas
+   * Flujo desde login hasta cierre de sesión
+
+2. **Configuración Firebase**
+
+   * Crear proyecto, configurar Firestore
+   * Login con Google y captura de datos
+   * Hosting inicial con layout de frontend
+
+3. **Integración Gemini Live API**
+
+   * Captura de audio desde navegador
+   * Envío de input al modelo y transcripción en tiempo real
+   * Validación del tiempo de respuesta y control de turnos
+
+4. **Integración D-ID API**
+
+   * Renderizado del avatar humanoide con sincronización de voz
+   * Fallback a voz/texto en caso de error en el avatar
+
+5. **Motor de control de preguntas**
+
+   * Navegación entre preguntas
+   * Registro de respuestas y timestamps
+   * Confirmación de cierre por parte del usuario
+
+6. **Persistencia y recuperación de estado**
+
+   * Almacenamiento estructurado en Firestore
+   * Detección de encuestas inconclusas y reanudación desde última pregunta
+
+7. **Pruebas y ajuste final**
+
+   * Validación en múltiples dispositivos
+   * Simulación de encuestas completas e incompletas
+   * Revisión de experiencia de usuario en condiciones reales
+
+---
+
+## Buenas Prácticas para el Desarrollo
+
+* Uso exclusivo de rama `main` en GitHub. Commit por cada bloque funcional terminado.
+* Separación estricta entre lógica de frontend y backend.
+* Código limpio, comentado y modular.
+* Patrones de diseño para componentes React (presentacionales, contenedores).
+* Uso de variables de entorno seguras para claves API.
+* **SEGURIDAD CRÍTICA:** Información sensible (claves API, credenciales GCP) NUNCA en el repo. Usar archivos `.env` (incluidos en `.gitignore`) y cuentas de servicio GCP para producción.
+* Documentación de funciones, objetos y estructuras.
+* Tests unitarios para lógica crítica (manejo de sesiones, control de turnos, fallbacks).
+* Estructura de carpetas clara y mantenible.
+* Control de dependencias y configuración reproducible.
+* Todo deploy debe validarse localmente antes de subir a producción.
+
+---
+
+## Experiencia de Usuario y Latencia
+
+**PRIORIDAD MÁXIMA:** Garantizar excelente experiencia del usuario con tiempos de respuesta óptimos.
+
+### Métricas de Latencia Objetivo
+* **Latencia total estimada:** ~1 segundo entre que el usuario termina de hablar y el avatar empieza a responder
+* **Umbral crítico:** El cerebro humano tolera hasta 2 segundos de pausa antes de sentir "interrupción"
+* **Ventaja perceptual:** Una ligera pausa de ~1s puede hacer que la experiencia se perciba como más "pensada" y humana
+
+### Consideraciones Técnicas para Latencia
+* Optimizar pipeline de procesamiento: audio → transcripción → respuesta → síntesis de voz → avatar
+* Implementar streaming donde sea posible
+* Usar técnicas de pre-caching para respuestas comunes
+* Monitorear y optimizar cada componente del stack tecnológico
+* Priorizar experiencia fluida sobre funcionalidades adicionales
+
+---
+
+## Preguntas Pendientes (por resolver próximamente)
+
+* [ ] Definir el listado completo de preguntas del assessment.
+* [ ] Confirmar si se desea guardar audio original junto a la transcripción.
+* [ ] ¿Qué hacer si se detecta que el usuario está intentando “hacer trampa”? ¿Advertencia o bloqueo?
+* [ ] Validar límite de tokens o duración permitido por Gemini Live para input de audio.
+* [ ] Definir tono exacto de bienvenida del agente y cierre de sesión.
+
+---
