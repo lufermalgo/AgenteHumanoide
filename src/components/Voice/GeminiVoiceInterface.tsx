@@ -255,7 +255,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       console.error('❌ Error leyendo pregunta:', error);
       setStatus('idle');
     }
-  }, [geminiService?.connected, question, isListening]);
+  }, [geminiService?.connected, question, isListening, startListening]);
 
   // Inicializar Gemini Live API
   useEffect(() => {
@@ -339,11 +339,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     setIsListening(false);
     setStatus('idle');
     
-    // Limpiar timeouts
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
+
     
     console.log('✅ Recursos de audio limpiados');
   }, []);
@@ -507,7 +503,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       setStatus('error');
       setIsListening(false);
     }
-  }, [geminiService?.connected, addConversationTurn]);
+  }, [geminiService?.connected, addConversationTurn, geminiService]);
 
 
 

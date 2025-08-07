@@ -255,9 +255,9 @@ const AssessmentPage: React.FC = () => {
       console.log('🔇 Limpiando recursos de audio antes del logout...');
       
       // Detener todas las pistas de audio activas
-      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      if (navigator.mediaDevices) {
         try {
-          const streams = await navigator.mediaDevices.enumerateDevices();
+          await navigator.mediaDevices.enumerateDevices();
           // Esto no detiene streams activos, pero es una buena práctica
           console.log('✅ Recursos de audio enumerados');
         } catch (error) {
