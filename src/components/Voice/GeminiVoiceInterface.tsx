@@ -229,6 +229,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         
         await service.connect(ASSESSMENT_GEMINI_CONFIG);
         setGeminiService(service);
+        console.log('✅ Gemini conectado y listo para usar');
         
       } catch (error) {
         console.error('❌ Error inicializando Gemini Live:', error);
@@ -325,8 +326,14 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         setStatus('idle');
         // Iniciar escucha automática después de que termine de hablar
         setTimeout(() => {
+          console.log('⏰ Timeout ejecutado, verificando condiciones para auto-escucha...');
+          console.log('- Gemini conectado:', geminiService?.connected);
+          console.log('- Stream disponible:', !!stream);
           if (geminiService?.connected && stream) {
+            console.log('🎙️ Iniciando escucha automática...');
             startListening();
+          } else {
+            console.warn('⚠️ No se puede iniciar escucha automática - condiciones no cumplidas');
           }
         }, 500); // Pequeña pausa para transición natural
       };
@@ -369,20 +376,34 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
+          console.log('🎵 Datos de audio recibidos:', event.data.size, 'bytes');
           audioChunksRef.current.push(event.data);
         }
       };
       
       mediaRecorderRef.current.onstop = async () => {
+        console.log('🎤 Grabación detenida, procesando audio...');
+        console.log('📊 Chunks de audio recolectados:', audioChunksRef.current.length);
+        
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
         const arrayBuffer = await audioBlob.arrayBuffer();
+        
+        console.log('📁 Tamaño de audio final:', arrayBuffer.byteLength, 'bytes');
+        
+        if (arrayBuffer.byteLength === 0) {
+          console.warn('⚠️ No se capturó audio');
+          setStatus('idle');
+          return;
+        }
         
         setStatus('processing');
         
         try {
+          console.log('🧠 Enviando audio a Gemini para transcripción...');
           // Procesar audio con Gemini AI para transcripción
           const transcription = await geminiService.processAudio(arrayBuffer, 'audio/webm;codecs=opus');
           
+          console.log('✅ Transcripción recibida:', transcription);
           // Agregar transcripción a la conversación
           addConversationTurn(true, transcription);
           setStatus('idle');
@@ -445,16 +466,19 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     }
   };
 
-  // Si no hay permisos, mostrar solicitud
+  // Si no hay permisos, mostrar mensaje simple
   if (permission !== 'granted' || !stream) {
     return (
       <InterfaceContainer>
-        <AudioPermissionRequest 
-          onPermissionGranted={(grantedStream) => {
-            console.log('🎙️ Permisos concedidos en GeminiVoiceInterface', !!grantedStream);
-          }}
-          onSkip={onSkip}
-        />
+        <Section>
+          <SectionTitle>🎙️ Preparando experiencia de voz...</SectionTitle>
+          <p>Configurando micrófono para la conversación.</p>
+          {permission === 'denied' && (
+            <p style={{ color: '#ff4444' }}>
+              ⚠️ Micrófono bloqueado. Permite el acceso y recarga la página.
+            </p>
+          )}
+        </Section>
       </InterfaceContainer>
     );
   }

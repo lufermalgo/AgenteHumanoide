@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../Auth/AuthProvider';
-import VoiceInterface from '../Voice/VoiceInterface';
+// Solo usamos GeminiVoiceInterface para experiencia fluida
 import GeminiVoiceInterface from '../Voice/GeminiVoiceInterface';
 import { theme } from '../../styles/theme';
 
@@ -194,12 +194,21 @@ const AssessmentPage: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<number>(-1); // -1 = welcome, 0+ = questions
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [isCompleted, setIsCompleted] = useState(false);
-  // Usar siempre Gemini para experiencia fluida - sin toggle
-  const useGeminiLive = true;
+  // Solo Gemini - experiencia fluida sin opciones
 
-  const handleStartAssessment = () => {
+  const handleStartAssessment = async () => {
     console.log('🚀 Iniciando assessment para:', user?.displayName);
-    setCurrentQuestion(0);
+    
+    // Solicitar permisos de micrófono inmediatamente
+    try {
+      console.log('🎙️ Solicitando permisos de micrófono...');
+      await navigator.mediaDevices.getUserMedia({ audio: true });
+      console.log('✅ Permisos concedidos, iniciando assessment');
+      setCurrentQuestion(0);
+    } catch (error) {
+      console.error('❌ Error obteniendo permisos:', error);
+      alert('Necesitamos acceso al micrófono para continuar. Por favor, permite el acceso y recarga la página.');
+    }
   };
 
   const handleResponse = (response: string) => {
