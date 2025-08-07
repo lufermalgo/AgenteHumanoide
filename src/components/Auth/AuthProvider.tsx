@@ -40,36 +40,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
+      console.log('🚀 Iniciando login con Google...');
+      
       const result = await signInWithPopup(auth, googleProvider);
+      console.log('✅ Login exitoso:', result.user.email);
       
       // Validar dominio @summan.com
       if (!result.user.email?.endsWith('@summan.com')) {
+        console.log('❌ Dominio no autorizado:', result.user.email);
         await signOut(auth);
-        throw new Error('Access restricted to @summan.com domain');
+        throw new Error('Solo usuarios de @summan.com pueden acceder');
       }
 
-      // Llamar a la función backend para validar y crear usuario
-      const idToken = await result.user.getIdToken();
-      const response = await fetch(`http://127.0.0.1:5001/genai-385616/us-central1/assessmentiaValidateUser`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Authentication failed');
-      }
-
-      const userData = await response.json();
-      console.log('User validated:', userData);
+      console.log('✅ Usuario autorizado:', result.user.displayName, result.user.email);
+      // El user se actualiza automáticamente por onAuthStateChanged
 
     } catch (error) {
-      console.error('Authentication error:', error);
+      console.error('❌ Error en autenticación:', error);
       setUser(null);
-      throw error;
+      
+      // Mejorar mensajes de error
+      if (error.code === 'auth/popup-closed-by-user') {
+        throw new Error('Login cancelado por el usuario');
+      } else if (error.code === 'auth/network-request-failed') {
+        throw new Error('Error de red. Verifica tu conexión a internet.');
+      } else if (error.message?.includes('@summan.com')) {
+        throw error; // Mantener mensaje personalizado de dominio
+      } else {
+        throw new Error('Error al iniciar sesión. Intenta de nuevo.');
+      }
     } finally {
       setLoading(false);
     }

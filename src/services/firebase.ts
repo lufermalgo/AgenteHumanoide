@@ -37,4 +37,8 @@ googleProvider.setCustomParameters({
   hd: 'summan.com' // Restringir a dominio de Summan SAS
 });
 
+// Configurar scopes necesarios
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
+
 export default app;
