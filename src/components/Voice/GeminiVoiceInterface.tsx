@@ -171,7 +171,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
 }) => {
 
   
-  const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking' | 'error'>('idle');
+  const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking' | 'error' | 'ready-to-listen'>('idle');
   const [conversation, setConversation] = useState<ConversationTurn[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [geminiService, setGeminiService] = useState<GeminiLiveService | null>(null);
@@ -238,14 +238,8 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
           console.log('⏰ Timeout ejecutado, iniciando escucha automática...');
           if (geminiService?.connected) {
             console.log('🎙️ Iniciando escucha automática...');
-            // Usar una función que se ejecute después de que startListening esté definido
-            setTimeout(() => {
-              if (typeof window !== 'undefined' && window.speechSynthesis) {
-                // Iniciar escucha automáticamente
-                const event = new CustomEvent('startListening');
-                window.dispatchEvent(event);
-              }
-            }, 100);
+            // Simplemente cambiar el estado para indicar que debe iniciar escucha
+            setStatus('ready-to-listen');
           } else {
             console.warn('⚠️ Gemini no conectado');
           }
@@ -322,6 +316,14 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     }
   }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion, readQuestion]);
 
+  // Detectar cuando debe iniciar escucha automáticamente
+  useEffect(() => {
+    if (status === 'ready-to-listen' && geminiService?.connected && !isListening) {
+      console.log('🎙️ Estado ready-to-listen detectado, iniciando escucha...');
+      startListening();
+    }
+  }, [status, geminiService?.connected, isListening, startListening]);
+
   // Función de limpieza para detener todos los recursos de audio
   const cleanupAudioResources = useCallback(() => {
     console.log('🔇 Limpiando recursos de audio en GeminiVoiceInterface...');
@@ -351,20 +353,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     console.log('✅ Recursos de audio limpiados');
   }, []);
 
-  // Event listener para iniciar escucha automáticamente
-  useEffect(() => {
-    const handleStartListening = () => {
-      if (geminiService?.connected && !isListening) {
-        startListening();
-      }
-    };
 
-    window.addEventListener('startListening', handleStartListening);
-    
-    return () => {
-      window.removeEventListener('startListening', handleStartListening);
-    };
-  }, [geminiService?.connected, isListening, startListening]);
 
   // Limpiar recursos cuando el componente se desmonte
   useEffect(() => {
@@ -542,6 +531,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       case 'listening': return '🎙️ Escuchando...';
       case 'processing': return '⚙️ Procesando con Gemini...';
       case 'speaking': return '🗣️ Hablando...';
+      case 'ready-to-listen': return '🎙️ Preparando escucha...';
       case 'error': return '❌ Error de conexión';
       default: return '💬 Listo para conversar';
     }
