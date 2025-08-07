@@ -1,0 +1,101 @@
+/* Estilos específicos de la aplicación */
+.app {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+}
+
+/* Layout principal del assessment */
+.assessment-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+}
+
+/* Sección de contenido (izquierda) */
+.content-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background: var(--color-background-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+/* Sección del avatar (derecha) */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-background-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Estados de conversación */
+.conversation-state {
+  position: absolute;
+  top: var(--spacing-lg);
+  left: var(--spacing-lg);
+  right: var(--spacing-lg);
+  text-align: center;
+  font-weight: 500;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-size: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.state-listening {
+  background-color: var(--summan-primary);
+  color: var(--color-text-white);
+}
+
+.state-processing {
+  background-color: var(--summan-secondary);
+  color: var(--color-text-white);
+}
+
+.state-responding {
+  background-color: var(--summan-tertiary);
+  color: var(--color-text-white);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .assessment-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+  }
+  
+  .avatar-section {
+    min-height: 300px;
+  }
+  
+  .content-section {
+    padding: var(--spacing-lg);
+  }
+}
+
+@media (max-width: 480px) {
+  .assessment-layout {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-sm);
+  }
+  
+  .content-section {
+    padding: var(--spacing-md);
+  }
+  
+  .avatar-section {
+    min-height: 250px;
+  }
+}

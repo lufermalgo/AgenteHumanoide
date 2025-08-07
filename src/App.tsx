@@ -1,16 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from 'styled-components';
 import { AuthProvider } from './components/Auth/AuthProvider';
 import LoginPage from './components/Auth/LoginPage';
 import AssessmentPage from './components/QuestionFlow/AssessmentPage';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
-import './styles/App.css';
+import { GlobalStyles } from './styles/GlobalStyles';
+import { theme } from './styles/theme';
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="app">
+    <ThemeProvider theme={theme}>
+      <GlobalStyles />
+      <AuthProvider>
+        <Router>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
             <Route 
@@ -30,9 +33,9 @@ const App: React.FC = () => {
               } 
             />
           </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
