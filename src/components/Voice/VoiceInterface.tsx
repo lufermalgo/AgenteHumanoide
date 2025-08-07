@@ -157,6 +157,7 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
 
   const handlePermissionGranted = (stream: MediaStream) => {
     console.log('✅ Permisos de audio concedidos, stream disponible');
+    console.log('🔄 Estado actual de audio:', audioState);
     setStatus('idle');
   };
 
@@ -217,6 +218,8 @@ const VoiceInterface: React.FC<VoiceInterfaceProps> = ({
   };
 
   // Si no hay permisos, mostrar solicitud
+  console.log('🎤 VoiceInterface - Estado de permisos:', audioState.permission);
+  
   if (audioState.permission !== 'granted') {
     return (
       <InterfaceContainer>

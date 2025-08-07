@@ -125,6 +125,7 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
 
   React.useEffect(() => {
     if (permission === 'granted' && stream) {
+      console.log('🎤 Permisos concedidos, llamando onPermissionGranted');
       onPermissionGranted(stream);
     }
   }, [permission, stream, onPermissionGranted]);
@@ -140,8 +141,10 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
     }
   };
 
+  // Si los permisos están concedidos, el useEffect se encargará de llamar onPermissionGranted
+  // No necesitamos mostrar LoadingSpinner aquí porque el componente padre manejará la transición
   if (permission === 'granted' && stream) {
-    return <LoadingSpinner text="Micrófono autorizado. Iniciando experiencia de voz..." />;
+    return null; // El componente padre se encargará de mostrar la interfaz correcta
   }
 
   return (
