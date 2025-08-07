@@ -1,4 +1,4 @@
-import { GoogleGenAI, LiveServerMessage, Modality, Session } from '@google/genai';
+import { GoogleGenerativeAI, GenerateContentStreamResult, EnhancedGenerateContentResponse } from '@google/generative-ai';
 
 interface AudioConfig {
   inputSampleRate: number;
@@ -22,8 +22,8 @@ export interface AudioProcessor {
 }
 
 export class GeminiLiveService {
-  private client: GoogleGenAI;
-  private session: Session | null = null;
+  private client: GoogleGenerativeAI;
+  private model: any;
   private inputContext: AudioContext;
   private outputContext: AudioContext;
   private nextStartTime = 0;
@@ -32,6 +32,7 @@ export class GeminiLiveService {
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private mediaStream: MediaStream | null = null;
   private isRecording = false;
+  private chatStream: GenerateContentStreamResult | null = null;
 
   private readonly defaultConfig: GeminiLiveConfig = {
     audio: {
@@ -46,7 +47,7 @@ export class GeminiLiveService {
   };
 
   constructor(apiKey: string, config: Partial<GeminiLiveConfig> = {}) {
-    this.client = new GoogleGenAI({ apiKey });
+    this.client = new GoogleGenerativeAI(apiKey);
     
     const mergedConfig = {
       ...this.defaultConfig,
@@ -54,6 +55,17 @@ export class GeminiLiveService {
       audio: { ...this.defaultConfig.audio, ...config.audio },
       voice: { ...this.defaultConfig.voice, ...config.voice }
     };
+
+    // Inicializar modelo
+    this.model = this.client.getGenerativeModel({
+      model: 'gemini-1.5-pro',
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1024,
+      }
+    });
 
     // Inicializar contextos de audio
     const AudioContextClass = window.AudioContext;
@@ -68,73 +80,43 @@ export class GeminiLiveService {
 
   async connect(callbacks: {
     onOpen?: () => void;
-    onMessage?: (message: LiveServerMessage) => void;
+    onMessage?: (text: string) => void;
     onError?: (error: Error) => void;
     onClose?: (reason: string) => void;
   } = {}): Promise<void> {
     try {
-      console.log('🔄 Conectando con Gemini Live...');
+      console.log('🔄 Conectando con Gemini...');
       
-      this.session = await this.client.live.connect({
-        model: 'gemini-2.5-flash-preview-native-audio-dialog',
-        callbacks: {
-          onopen: () => {
-            console.log('✅ Conexión establecida con Gemini Live');
-            callbacks.onOpen?.();
-          },
-          onmessage: async (message: LiveServerMessage) => {
-            try {
-              const audio = message.serverContent?.modelTurn?.parts[0]?.inlineData;
-              
-              if (audio) {
-                await this.processAudioResponse(audio);
-              }
-
-              // Manejar interrupciones
-              if (message.serverContent?.interrupted) {
-                this.handleInterruption();
-              }
-
-              callbacks.onMessage?.(message);
-            } catch (error) {
-              console.error('❌ Error procesando mensaje:', error);
-              callbacks.onError?.(error as Error);
-            }
-          },
-          onerror: (error: any) => {
-            console.error('❌ Error en sesión:', error);
-            callbacks.onError?.(error);
-          },
-          onclose: (event: any) => {
-            console.log('👋 Sesión cerrada:', event?.reason);
-            callbacks.onClose?.(event?.reason || 'Unknown reason');
-          }
-        },
-        config: {
-          responseModalities: [Modality.AUDIO],
-          speechConfig: {
-            voiceConfig: {
-              prebuiltVoiceConfig: {
-                voiceName: this.defaultConfig.voice.voiceName
-              }
-            },
-            languageCode: this.defaultConfig.voice.languageCode
-          }
-        }
+      // Iniciar chat
+      this.chatStream = await this.model.generateContentStream({
+        contents: [{
+          role: 'user',
+          parts: [{
+            text: `Eres un asistente amigable para un assessment de IA generativa. 
+            Debes ser empático, cercano y usar un español colombiano natural.
+            Tus respuestas deben ser concisas y enfocadas.
+            No des opiniones ni retroalimentación sobre las respuestas.`
+          }]
+        }]
       });
 
+      console.log('✅ Conexión establecida con Gemini');
+      callbacks.onOpen?.();
+
+      // Inicializar audio
       console.log('🎙️ Inicializando contextos de audio...');
       await this.inputContext.resume();
       await this.outputContext.resume();
       
     } catch (error) {
-      console.error('❌ Error conectando con Gemini Live:', error);
+      console.error('❌ Error conectando con Gemini:', error);
+      callbacks.onError?.(error as Error);
       throw error;
     }
   }
 
   async startRecording(): Promise<void> {
-    if (this.isRecording || !this.session) {
+    if (this.isRecording || !this.chatStream) {
       return;
     }
 
@@ -158,16 +140,48 @@ export class GeminiLiveService {
       );
 
       // Configurar procesamiento de audio
-      this.scriptProcessor.onaudioprocess = (event) => {
+      this.scriptProcessor.onaudioprocess = async (event) => {
         if (!this.isRecording) return;
 
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
         
-        // Enviar audio a Gemini
-        this.session?.sendRealtimeInput({
-          media: this.createAudioBlob(inputData)
-        });
+        // Procesar audio con Web Speech API
+        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+        recognition.lang = this.defaultConfig.voice.languageCode;
+        recognition.continuous = true;
+        recognition.interimResults = false;
+
+        recognition.onresult = async (event) => {
+          const transcript = event.results[event.results.length - 1][0].transcript;
+          console.log('🎙️ Transcripción:', transcript);
+
+          // Enviar a Gemini
+          const result = await this.model.generateContentStream({
+            contents: [{
+              role: 'user',
+              parts: [{ text: transcript }]
+            }]
+          });
+
+          // Procesar respuesta
+          let response = '';
+          for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            response += chunkText;
+          }
+
+          // Sintetizar voz
+          const utterance = new SpeechSynthesisUtterance(response);
+          utterance.lang = this.defaultConfig.voice.languageCode;
+          utterance.rate = 0.85;
+          utterance.pitch = 1.0;
+          utterance.volume = 0.8;
+
+          speechSynthesis.speak(utterance);
+        };
+
+        recognition.start();
       };
 
       // Conectar nodos
