@@ -214,8 +214,6 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   const [geminiService, setGeminiService] = useState<GeminiLiveService | null>(null);
   const [hasReadQuestion, setHasReadQuestion] = useState(false);
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Inicializar Gemini Live API
@@ -369,192 +367,156 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   };
 
   const startListening = async () => {
-    console.log('🎙️ Iniciando grabación siguiendo patrón Open WebUI...');
+    console.log('🎙️ Iniciando escucha siguiendo patrón Open WebUI...');
     console.log('- Gemini conectado:', geminiService?.connected);
-    
     if (!geminiService?.connected) {
-      console.error('❌ Gemini no está conectado');
+      console.error('❌ Gemini no conectado');
       return;
     }
-    
-    // Solicitar stream como hace Open WebUI - cada vez que se necesita
-    let audioStream: MediaStream | null = null;
-    try {
-      console.log('🎤 Solicitando stream de audio...');
-      audioStream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
-        }
-      });
-      
-      if (!audioStream) {
-        console.error('❌ No se pudo obtener stream');
-        return;
-      }
-      
-      console.log('✅ Stream obtenido correctamente');
-      setStream(audioStream);
-    } catch (err) {
-      console.error('❌ Error accediendo al micrófono:', err);
-      setStatus('error');
-      return;
-    }
-    
-    try {
-      setIsListening(true);
-      setStatus('listening');
-      audioChunksRef.current = [];
-      
-      mediaRecorderRef.current = new MediaRecorder(audioStream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
-      
-      mediaRecorderRef.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          console.log('🎵 Datos de audio recibidos:', event.data.size, 'bytes');
-          audioChunksRef.current.push(event.data);
-        }
-      };
-      
-      mediaRecorderRef.current.onstop = async () => {
-        console.log('🎤 Grabación detenida, procesando audio...');
-        console.log('📊 Chunks de audio recolectados:', audioChunksRef.current.length);
+
+    // Usar Web Speech API como Open WebUI
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+      try {
+        setIsListening(true);
+        setStatus('listening');
         
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
-        const arrayBuffer = await audioBlob.arrayBuffer();
+        // Crear SpeechRecognition object
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const speechRecognition = new SpeechRecognition();
         
-        console.log('📁 Tamaño de audio final:', arrayBuffer.byteLength, 'bytes');
+        // Configurar como Open WebUI
+        speechRecognition.continuous = true;
+        speechRecognition.interimResults = false;
+        speechRecognition.lang = 'es-CO';
         
-        if (arrayBuffer.byteLength === 0) {
-          console.warn('⚠️ No se capturó audio');
-          setStatus('idle');
-          setIsListening(false);
-          return;
-        }
+        let transcription = '';
+        let timeoutId: NodeJS.Timeout;
+        const inactivityTimeout = 3000; // 3 segundos de silencio
         
-        setStatus('processing');
+        speechRecognition.onstart = () => {
+          console.log('🎤 Speech recognition iniciado');
+        };
         
-        try {
-          console.log('🧠 Enviando audio a Gemini para transcripción...');
-          // Procesar audio con Gemini AI para transcripción
-          const transcription = await geminiService.processAudio(arrayBuffer, 'audio/webm;codecs=opus');
+        speechRecognition.onresult = async (event: any) => {
+          console.log('🎵 Speech reconocido:', event);
           
-          console.log('✅ Transcripción recibida:', transcription);
-          // Agregar transcripción a la conversación
-          addConversationTurn(true, transcription);
+          // Limpiar timeout de inactividad
+          clearTimeout(timeoutId);
           
-          // Generar respuesta automática del agente para mantener conversación fluida
-          try {
-            console.log('🤖 Generando respuesta del agente...');
-            const agentResponse = await geminiService.generateTextResponse(
-              `El usuario respondió: "${transcription}". Genera una respuesta natural y empática que confirme que entendiste su respuesta y continúe la conversación de forma fluida. Responde de forma concisa.`
-            );
+          // Obtener transcripción
+          const transcript = event.results[Object.keys(event.results).length - 1][0].transcript;
+          transcription = `${transcription}${transcript}`;
+          
+          console.log('✅ Transcripción en tiempo real:', transcription);
+          
+          // Reiniciar timeout de inactividad
+          timeoutId = setTimeout(() => {
+            console.log('⏰ Timeout de inactividad, procesando transcripción final...');
+            speechRecognition.stop();
+          }, inactivityTimeout);
+        };
+        
+        speechRecognition.onend = async () => {
+          console.log('🎤 Speech recognition terminado, procesando transcripción...');
+          clearTimeout(timeoutId);
+          
+          if (transcription.trim()) {
+            console.log('✅ Transcripción final:', transcription);
             
-            console.log('🤖 Respuesta del agente:', agentResponse);
-            addConversationTurn(false, agentResponse);
+            // Agregar transcripción a la conversación
+            addConversationTurn(true, transcription);
             
-            // Leer la respuesta del agente automáticamente
-            const utterance = new SpeechSynthesisUtterance(agentResponse);
-            utterance.lang = 'es-CO';
-            utterance.rate = 0.85;
-            utterance.pitch = 1.0;
-            utterance.volume = 0.8;
-            
-            utterance.onend = () => {
-              console.log('🤖 Agente terminó de responder, iniciando siguiente ciclo...');
+            // Generar respuesta automática del agente
+            try {
+              console.log('🤖 Generando respuesta del agente...');
+              const agentResponse = await geminiService.generateTextResponse(
+                `El usuario respondió: "${transcription}". Genera una respuesta natural y empática que confirme que entendiste su respuesta y continúe la conversación de forma fluida. Responde de forma concisa.`
+              );
+              
+              console.log('🤖 Respuesta del agente:', agentResponse);
+              addConversationTurn(false, agentResponse);
+              
+              // Leer la respuesta del agente automáticamente
+              const utterance = new SpeechSynthesisUtterance(agentResponse);
+              utterance.lang = 'es-CO';
+              utterance.rate = 0.85;
+              utterance.pitch = 1.0;
+              utterance.volume = 0.8;
+              
+              utterance.onend = () => {
+                console.log('🤖 Agente terminó de responder, iniciando siguiente ciclo...');
+                setStatus('idle');
+                // Iniciar escucha automática para la siguiente interacción
+                setTimeout(() => {
+                  if (geminiService?.connected) {
+                    startListening();
+                  }
+                }, 500);
+              };
+              
+              setStatus('speaking');
+              speechSynthesis.speak(utterance);
+              
+            } catch (error) {
+              console.error('❌ Error generando respuesta del agente:', error);
               setStatus('idle');
-              // Iniciar escucha automática para la siguiente interacción
-              setTimeout(() => {
-                if (geminiService?.connected) {
-                  startListening();
-                }
-              }, 500);
-            };
-            
-            setStatus('speaking');
-            speechSynthesis.speak(utterance);
-            
-          } catch (error) {
-            console.error('❌ Error generando respuesta del agente:', error);
+              setIsListening(false);
+            }
+          } else {
+            console.log('⚠️ No se detectó transcripción, reiniciando escucha...');
             setStatus('idle');
             setIsListening(false);
+            // Reiniciar escucha automáticamente
+            setTimeout(() => {
+              if (geminiService?.connected) {
+                startListening();
+              }
+            }, 1000);
           }
-          
-        } catch (error) {
-          console.error('❌ Error procesando audio:', error);
+        };
+        
+        speechRecognition.onerror = (event: any) => {
+          console.error('❌ Error en speech recognition:', event);
           setStatus('error');
-          setIsListening(false); // Cambiar estado en caso de error
-        }
-      };
-      
-      // Agregar onerror para debugging
-      mediaRecorderRef.current.onerror = (event) => {
-        console.error('❌ Error en MediaRecorder:', event);
+          setIsListening(false);
+        };
+        
+        // Iniciar recognition
+        speechRecognition.start();
+        
+      } catch (error) {
+        console.error('❌ Error iniciando speech recognition:', error);
         setStatus('error');
-      };
-      
-      mediaRecorderRef.current.start(100); // Capturar cada 100ms
-      
-      // Auto-detener después de 5 segundos de silencio (simulado por tiempo máximo)
-      silenceTimeoutRef.current = setTimeout(() => {
-        console.log('🔇 Deteniendo grabación automáticamente (silencio detectado)');
-        console.log('⏰ Timeout ejecutado, llamando stopListening...');
-        stopListening();
-      }, 5000); // 5 segundos máximo de grabación continua
-      
-    } catch (error) {
-      console.error('❌ Error iniciando grabación:', error);
+        setIsListening(false);
+      }
+    } else {
+      console.error('❌ Speech Recognition no soportado en este navegador');
       setStatus('error');
       setIsListening(false);
     }
   };
 
   const stopListening = () => {
-    console.log('⏹️ stopListening llamado, estado actual:', {
-      mediaRecorder: !!mediaRecorderRef.current,
-      isListening,
-      mediaRecorderState: mediaRecorderRef.current?.state
-    });
+    console.log('⏹️ stopListening llamado');
+    setIsListening(false);
+    setStatus('idle');
     
-    if (mediaRecorderRef.current && isListening) {
-      console.log('⏹️ Deteniendo grabación...');
-      
-      try {
-        mediaRecorderRef.current.stop();
-        console.log('✅ MediaRecorder.stop() ejecutado');
-        // NO cambiar isListening aquí - dejarlo para que onstop procese
-      } catch (error) {
-        console.error('❌ Error deteniendo MediaRecorder:', error);
-        setIsListening(false); // Solo cambiar si hay error
-      }
-      
-      // Limpiar timeout de silencio
-      if (silenceTimeoutRef.current) {
-        clearTimeout(silenceTimeoutRef.current);
-        silenceTimeoutRef.current = null;
-      }
-      
-      // Parar stream como hace Open WebUI
-      if (stream) {
-        console.log('🔇 Parando tracks del stream...');
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-        setStream(null);
-      }
-    } else {
-      console.log('⚠️ No se puede detener: MediaRecorder no disponible o no está grabando');
+    // Limpiar timeouts
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    
+    // Limpiar stream si existe
+    if (stream) {
+      console.log('🔇 Parando tracks del stream...');
+      const tracks = stream.getTracks();
+      tracks.forEach((track) => track.stop());
+      setStream(null);
     }
   };
 
-  const handleVoiceToggle = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
+
 
   const handleNext = () => {
     if (conversation.some(turn => turn.isUser) && onNext) {
