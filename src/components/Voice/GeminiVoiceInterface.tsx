@@ -158,6 +158,7 @@ export interface GeminiVoiceInterfaceProps {
   onNext?: () => void;
   onSkip?: () => void;
   autoReadQuestion?: boolean;
+  onCleanup?: () => void;
 }
 
 const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
@@ -165,7 +166,8 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   onResponse,
   onNext,
   onSkip,
-  autoReadQuestion = true
+  autoReadQuestion = true,
+  onCleanup
 }) => {
 
   
@@ -174,6 +176,9 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   const [isListening, setIsListening] = useState(false);
   const [geminiService, setGeminiService] = useState<GeminiLiveService | null>(null);
   const [hasReadQuestion, setHasReadQuestion] = useState(false);
+  
+  // Ref para mantener referencia al speechRecognition activo
+  const activeSpeechRecognitionRef = useRef<any>(null);
 
   // Definir readQuestion con useCallback para evitar re-renders
   const readQuestion = useCallback(async () => {
@@ -310,6 +315,49 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     }
   }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion, readQuestion]);
 
+  // Función de limpieza para detener todos los recursos de audio
+  const cleanupAudioResources = useCallback(() => {
+    console.log('🔇 Limpiando recursos de audio en GeminiVoiceInterface...');
+    
+    // Detener síntesis de voz
+    if (window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      console.log('✅ Síntesis de voz detenida');
+    }
+    
+    // Detener reconocimiento de voz si está activo
+    if (activeSpeechRecognitionRef.current) {
+      try {
+        activeSpeechRecognitionRef.current.stop();
+        console.log('✅ SpeechRecognition detenido');
+      } catch (error) {
+        console.warn('⚠️ Error deteniendo SpeechRecognition:', error);
+      }
+      activeSpeechRecognitionRef.current = null;
+    }
+    
+    setIsListening(false);
+    setStatus('idle');
+    
+    // Limpiar timeouts
+    if (silenceTimeoutRef.current) {
+      clearTimeout(silenceTimeoutRef.current);
+      silenceTimeoutRef.current = null;
+    }
+    
+    console.log('✅ Recursos de audio limpiados');
+  }, []);
+
+  // Limpiar recursos cuando el componente se desmonte
+  useEffect(() => {
+    return () => {
+      cleanupAudioResources();
+      if (onCleanup) {
+        onCleanup();
+      }
+    };
+  }, [cleanupAudioResources, onCleanup]);
+
   const addConversationTurn = useCallback((isUser: boolean, text: string, audioUrl?: string) => {
     const turn: ConversationTurn = {
       id: Date.now().toString(),
@@ -345,6 +393,9 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         // Crear SpeechRecognition object con tipos correctos
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         const speechRecognition = new SpeechRecognition();
+        
+        // Guardar referencia para poder detenerlo después
+        activeSpeechRecognitionRef.current = speechRecognition;
         
         // Configurar como Open WebUI
         speechRecognition.continuous = true;

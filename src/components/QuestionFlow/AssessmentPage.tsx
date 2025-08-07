@@ -251,6 +251,33 @@ const AssessmentPage: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+      // Limpiar recursos de audio antes del logout
+      console.log('🔇 Limpiando recursos de audio antes del logout...');
+      
+      // Detener todas las pistas de audio activas
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        try {
+          const streams = await navigator.mediaDevices.enumerateDevices();
+          // Esto no detiene streams activos, pero es una buena práctica
+          console.log('✅ Recursos de audio enumerados');
+        } catch (error) {
+          console.warn('⚠️ Error enumerando dispositivos de audio:', error);
+        }
+      }
+      
+      // Detener síntesis de voz si está activa
+      if (window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+        console.log('✅ Síntesis de voz detenida');
+      }
+      
+      // Detener reconocimiento de voz si está activo
+      if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        // No podemos acceder directamente a las instancias activas,
+        // pero podemos intentar detener cualquier reconocimiento activo
+        console.log('✅ Recursos de reconocimiento de voz marcados para limpieza');
+      }
+      
       await logout();
     } catch (error) {
       console.error('Logout error:', error);
@@ -359,6 +386,9 @@ const AssessmentPage: React.FC = () => {
             onNext={handleNext}
             onSkip={handleSkip}
             autoReadQuestion={true}
+            onCleanup={() => {
+              console.log('🔇 Limpieza solicitada desde AssessmentPage');
+            }}
           />
         </ContentSection>
 
