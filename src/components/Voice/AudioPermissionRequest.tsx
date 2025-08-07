@@ -118,14 +118,16 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
   onPermissionGranted, 
   onSkip 
 }) => {
-  const { permissionState, stream, error, requestPermission, browserSupportInfo } = useAudioPermissions();
+  const [audioState, audioActions] = useAudioPermissions();
+  const { permission, stream, error, capabilities } = audioState;
+  const { requestPermission } = audioActions;
   const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (permissionState === 'granted' && stream) {
+    if (permission === 'granted' && stream) {
       onPermissionGranted(stream);
     }
-  }, [permissionState, stream, onPermissionGranted]);
+  }, [permission, stream, onPermissionGranted]);
 
   const handleRequestPermission = async () => {
     setIsLoading(true);
@@ -138,7 +140,7 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
     }
   };
 
-  if (permissionState === 'granted' && stream) {
+  if (permission === 'granted' && stream) {
     return <LoadingSpinner text="Micrófono autorizado. Iniciando experiencia de voz..." />;
   }
 
@@ -152,7 +154,7 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
           Esto nos permitirá escucharte y responder en tiempo real.
         </Description>
 
-        {permissionState === 'prompt' && (
+        {permission === 'prompt' && (
           <PermissionButton 
             onClick={handleRequestPermission}
             disabled={isLoading}
@@ -161,7 +163,7 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
           </PermissionButton>
         )}
 
-        {permissionState === 'denied' && (
+        {permission === 'denied' && (
           <>
             <ErrorMessage>
               {error || 'Permiso de micrófono denegado. Por favor, habilítalo en la configuración de tu navegador para usar la voz.'}
@@ -172,12 +174,12 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
           </>
         )}
 
-        {permissionState === 'unavailable' && (
+        {permission === 'error' && (
           <>
             <ErrorMessage>
               {error || 'La funcionalidad de micrófono no está disponible en este navegador o dispositivo.'}
             </ErrorMessage>
-            {!browserSupportInfo.isHttps && browserSupportInfo.httpsRequired && (
+            {!capabilities.isHTTPS && (
               <InfoBox variant="info">
                 <strong>Sugerencia:</strong> Intenta acceder a esta página usando HTTPS (https://...) o en un navegador compatible.
               </InfoBox>
@@ -185,16 +187,16 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
           </>
         )}
 
-        {onSkip && permissionState !== 'granted' && (
+        {onSkip && permission !== 'granted' && (
           <PermissionButton variant="secondary" onClick={onSkip}>
             Continuar sin Voz
           </PermissionButton>
         )}
 
         <CapabilityList>
-          <li>Navegador: {browserSupportInfo.browserType} {browserSupportInfo.isMobile ? '(móvil)' : '(escritorio)'}</li>
-          <li>MediaRecorder: {browserSupportInfo.mediaRecorder ? 'Soportado' : 'No soportado'}</li>
-          <li>HTTPS: {browserSupportInfo.isHttps ? 'Sí' : 'No'}</li>
+          <li>Navegador: {capabilities.browser} {capabilities.isMobile ? '(móvil)' : '(escritorio)'}</li>
+          <li>MediaRecorder: {capabilities.hasMediaRecorder ? 'Soportado' : 'No soportado'}</li>
+          <li>HTTPS: {capabilities.isHTTPS ? 'Sí' : 'No'}</li>
         </CapabilityList>
 
         <Description style={{ marginTop: theme.spacing.xl, fontSize: theme.typography.fontSizes.sm }}>
