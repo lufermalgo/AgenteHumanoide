@@ -1,11 +1,7 @@
-export interface AssessmentQuestion {
-  id: string;
-  text: string;
-  category: string;
-  required?: boolean;
-  maxResponseTime?: number; // en segundos
-  followUpQuestions?: string[];
-}
+// Importar QuestionLoader para cargar preguntas dinámicamente
+import { QuestionLoader, AssessmentConfig, AssessmentQuestion } from './questionLoader';
+
+
 
 export interface AssessmentResponse {
   questionId: string;
@@ -322,9 +318,6 @@ export class AssessmentEngine {
   }
 }
 
-// Importar QuestionLoader para cargar preguntas dinámicamente
-import { QuestionLoader, AssessmentConfig, AssessmentQuestion } from './questionLoader';
-
 // Preguntas del assessment de IA generativa (fallback)
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
@@ -332,34 +325,44 @@ export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
     text: '¿Qué sabes sobre inteligencia artificial generativa? Cuéntame tu experiencia previa.',
     category: 'conocimiento_previo',
     required: true,
-    maxResponseTime: 120
+    maxResponseTime: 120,
+    order: 1,
+    tags: ['conocimiento', 'experiencia', 'basico']
   },
   {
     id: 'q2', 
     text: '¿Has usado herramientas como ChatGPT, Gemini o Claude? Si es así, ¿para qué las has utilizado?',
     category: 'experiencia_herramientas',
     required: true,
-    maxResponseTime: 90
+    maxResponseTime: 90,
+    order: 2,
+    tags: ['herramientas', 'uso_practico', 'experiencia']
   },
   {
     id: 'q3',
     text: '¿Cómo crees que la IA generativa podría ayudar en tu trabajo diario en Summan?',
     category: 'aplicacion_laboral',
     required: true,
-    maxResponseTime: 120
+    maxResponseTime: 120,
+    order: 3,
+    tags: ['aplicacion', 'trabajo', 'summan']
   },
   {
     id: 'q4',
     text: '¿Qué preocupaciones o desafíos ves en el uso de IA generativa en el entorno empresarial?',
     category: 'preocupaciones',
     required: false,
-    maxResponseTime: 90
+    maxResponseTime: 90,
+    order: 4,
+    tags: ['preocupaciones', 'desafios', 'empresarial']
   },
   {
     id: 'q5',
     text: '¿Te sientes cómodo aprendiendo nuevas herramientas de IA? ¿Qué tipo de capacitación preferirías?',
     category: 'capacitacion',
     required: true,
-    maxResponseTime: 120
+    maxResponseTime: 120,
+    order: 5,
+    tags: ['capacitacion', 'aprendizaje', 'preferencias']
   }
 ]; 

@@ -4,7 +4,7 @@ import { useAuth } from '../Auth/AuthProvider';
 // Solo usamos GeminiVoiceInterface para experiencia fluida
 import GeminiVoiceInterface from '../Voice/GeminiVoiceInterface';
 import { theme } from '../../styles/theme';
-import { AssessmentEngine, ASSESSMENT_QUESTIONS, AssessmentSession } from '../../services/assessmentEngine';
+import { AssessmentEngine, AssessmentSession } from '../../services/assessmentEngine';
 
 const AssessmentContainer = styled.div`
   min-height: 100vh;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../Auth/AuthProvider';
-import { QuestionLoader, AssessmentConfig, AssessmentQuestion } from '../../services/questionLoader';
+import { QuestionLoader, AssessmentConfig } from '../../services/questionLoader';
 import { theme } from '../../styles/theme';
 
 const AdminContainer = styled.div`
@@ -236,7 +236,7 @@ const AdminPanel: React.FC = () => {
 
   useEffect(() => {
     loadCurrentConfig();
-  }, []);
+  }, [questionLoader]);
 
   const loadCurrentConfig = async () => {
     try {
@@ -278,7 +278,7 @@ const AdminPanel: React.FC = () => {
 
   const handleValidateJson = () => {
     try {
-      const parsed = JSON.parse(jsonContent);
+      JSON.parse(jsonContent);
       setStatus({ type: 'success', message: 'JSON válido' });
     } catch (error) {
       setStatus({ type: 'error', message: `JSON inválido: ${error}` });
