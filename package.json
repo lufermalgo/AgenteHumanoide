@@ -5,6 +5,7 @@
   "private": true,
   "dependencies": {
     "@google-cloud/aiplatform": "^3.24.0",
+    "@google/genai": "^1.13.0",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.2",
     "firebase": "^10.12.0",

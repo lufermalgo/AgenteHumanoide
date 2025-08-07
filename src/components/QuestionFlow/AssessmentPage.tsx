@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../Auth/AuthProvider';
 import VoiceInterface from '../Voice/VoiceInterface';
+import GeminiVoiceInterface from '../Voice/GeminiVoiceInterface';
 import { theme } from '../../styles/theme';
 
 const AssessmentContainer = styled.div`
@@ -193,6 +194,7 @@ const AssessmentPage: React.FC = () => {
   const [currentQuestion, setCurrentQuestion] = useState<number>(-1); // -1 = welcome, 0+ = questions
   const [responses, setResponses] = useState<Record<string, string>>({});
   const [isCompleted, setIsCompleted] = useState(false);
+  const [useGeminiLive, setUseGeminiLive] = useState(true); // Toggle para usar Gemini Live
 
   const handleStartAssessment = () => {
     console.log('🚀 Iniciando assessment para:', user?.displayName);
@@ -318,14 +320,47 @@ const AssessmentPage: React.FC = () => {
             </div>
           </div>
 
-          <VoiceInterface
-            question={question.text}
-            onResponse={handleResponse}
-            onNext={handleNext}
-            onSkip={handleSkip}
-            autoReadQuestion={true}
-            maxRecordingTime={120} // 2 minutos máximo por respuesta
-          />
+          {/* Toggle para Gemini Live */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: theme.spacing.sm,
+            marginBottom: theme.spacing.lg,
+            padding: theme.spacing.md,
+            background: theme.colors.backgroundCard,
+            borderRadius: theme.borderRadius.md,
+            fontSize: theme.typography.fontSizes.sm
+          }}>
+            <span>🧠 Gemini Live API</span>
+            <label style={{ display: 'flex', alignItems: 'center', gap: theme.spacing.xs }}>
+              <input
+                type="checkbox"
+                checked={useGeminiLive}
+                onChange={(e) => setUseGeminiLive(e.target.checked)}
+                style={{ marginRight: theme.spacing.xs }}
+              />
+              {useGeminiLive ? 'Activado (Mejor transcripción + conversación natural)' : 'Desactivado (Web Speech API básico)'}
+            </label>
+          </div>
+
+          {useGeminiLive ? (
+            <GeminiVoiceInterface
+              question={question.text}
+              onResponse={handleResponse}
+              onNext={handleNext}
+              onSkip={handleSkip}
+              autoReadQuestion={true}
+            />
+          ) : (
+            <VoiceInterface
+              question={question.text}
+              onResponse={handleResponse}
+              onNext={handleNext}
+              onSkip={handleSkip}
+              autoReadQuestion={true}
+              maxRecordingTime={120} // 2 minutos máximo por respuesta
+            />
+          )}
         </ContentSection>
 
         <AvatarSection>
