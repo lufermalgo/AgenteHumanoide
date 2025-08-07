@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../styles/theme';
 import { GeminiLiveService, ASSESSMENT_GEMINI_CONFIG } from '../../services/geminiLive';
@@ -167,92 +167,16 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   onSkip,
   autoReadQuestion = true
 }) => {
-  // Simplificar: no usar hook complejo, manejar stream directamente como Open WebUI
-  const [stream, setStream] = useState<MediaStream | null>(null);
+
   
   const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking' | 'error'>('idle');
   const [conversation, setConversation] = useState<ConversationTurn[]>([]);
   const [isListening, setIsListening] = useState(false);
   const [geminiService, setGeminiService] = useState<GeminiLiveService | null>(null);
   const [hasReadQuestion, setHasReadQuestion] = useState(false);
-  
-  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Inicializar Gemini Live API
-  useEffect(() => {
-    const initGemini = async () => {
-      try {
-        const service = new GeminiLiveService();
-        
-        // El servicio ahora funciona de forma síncrona con la API estándar
-        console.log('✅ Servicio Gemini listo para transcripción');
-        
-        await service.connect(ASSESSMENT_GEMINI_CONFIG);
-        setGeminiService(service);
-        console.log('✅ Gemini conectado y listo para usar');
-        
-      } catch (error) {
-        console.error('❌ Error inicializando Gemini Live:', error);
-        setStatus('error');
-      }
-    };
-
-    // Inicializar Gemini cuando el componente se monta
-    if (!geminiService) {
-      initGemini();
-    }
-    
-    return () => {
-      geminiService?.disconnect();
-    };
-  }, [geminiService]);
-
-  // Cargar voces disponibles
-  useEffect(() => {
-    const loadVoices = () => {
-      const voices = speechSynthesis.getVoices();
-      if (voices.length > 0) {
-        console.log('🗣️ Voces cargadas:', voices.length);
-      }
-    };
-    
-    // Las voces pueden cargarse de forma asíncrona
-    if (speechSynthesis.getVoices().length === 0) {
-      speechSynthesis.addEventListener('voiceschanged', loadVoices);
-    } else {
-      loadVoices();
-    }
-    
-    return () => {
-      speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-    };
-  }, []);
-
-  // Auto-leer pregunta
-  useEffect(() => {
-    if (autoReadQuestion && geminiService?.connected && question && !hasReadQuestion) {
-      readQuestion();
-      setHasReadQuestion(true);
-    }
-  }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion, readQuestion]);
-
-  const addConversationTurn = (isUser: boolean, text: string, audioUrl?: string) => {
-    const turn: ConversationTurn = {
-      id: Date.now().toString(),
-      isUser,
-      text,
-      timestamp: new Date(),
-      audioUrl
-    };
-    
-    setConversation(prev => [...prev, turn]);
-    
-    if (isUser) {
-      onResponse(text);
-    }
-  };
-
-  const readQuestion = async () => {
+  // Definir readQuestion con useCallback para evitar re-renders
+  const readQuestion = useCallback(async () => {
     if (!geminiService?.connected) return;
     
     try {
@@ -326,9 +250,85 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       console.error('❌ Error leyendo pregunta:', error);
       setStatus('idle');
     }
-  };
+  }, [geminiService?.connected, question, isListening]);
 
-  const startListening = async () => {
+  // Inicializar Gemini Live API
+  useEffect(() => {
+    const initGemini = async () => {
+      try {
+        const service = new GeminiLiveService();
+        
+        // El servicio ahora funciona de forma síncrona con la API estándar
+        console.log('✅ Servicio Gemini listo para transcripción');
+        
+        await service.connect(ASSESSMENT_GEMINI_CONFIG);
+        setGeminiService(service);
+        console.log('✅ Gemini conectado y listo para usar');
+        
+      } catch (error) {
+        console.error('❌ Error inicializando Gemini Live:', error);
+        setStatus('error');
+      }
+    };
+
+    // Inicializar Gemini cuando el componente se monta
+    if (!geminiService) {
+      initGemini();
+    }
+    
+    return () => {
+      geminiService?.disconnect();
+    };
+  }, [geminiService]);
+
+  // Cargar voces disponibles
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = speechSynthesis.getVoices();
+      if (voices.length > 0) {
+        console.log('🗣️ Voces cargadas:', voices.length);
+      }
+    };
+    
+    // Las voces pueden cargarse de forma asíncrona
+    if (speechSynthesis.getVoices().length === 0) {
+      speechSynthesis.addEventListener('voiceschanged', loadVoices);
+    } else {
+      loadVoices();
+    }
+    
+    return () => {
+      speechSynthesis.removeEventListener('voiceschanged', loadVoices);
+    };
+  }, []);
+
+  // Auto-leer pregunta
+  useEffect(() => {
+    if (autoReadQuestion && geminiService?.connected && question && !hasReadQuestion) {
+      readQuestion();
+      setHasReadQuestion(true);
+    }
+  }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion, readQuestion]);
+
+  const addConversationTurn = useCallback((isUser: boolean, text: string, audioUrl?: string) => {
+    const turn: ConversationTurn = {
+      id: Date.now().toString(),
+      isUser,
+      text,
+      timestamp: new Date(),
+      audioUrl
+    };
+    
+    setConversation(prev => [...prev, turn]);
+    
+    if (isUser) {
+      onResponse(text);
+    }
+  }, [onResponse]);
+
+
+
+  const startListening = useCallback(async () => {
     console.log('🎙️ Iniciando escucha siguiendo patrón Open WebUI...');
     console.log('- Gemini conectado:', geminiService?.connected);
     if (!geminiService?.connected) {
@@ -456,7 +456,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       setStatus('error');
       setIsListening(false);
     }
-  };
+  }, [geminiService?.connected, addConversationTurn]);
 
 
 
