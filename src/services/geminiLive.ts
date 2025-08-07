@@ -45,7 +45,7 @@ export class GeminiLiveService {
     try {
       console.log('🧠 Inicializando Gemini AI...');
       
-      const modelName = config.model || 'gemini-1.5-flash';
+      const modelName = config.model || 'gemini-1.5-pro';
       this.model = this.client.getGenerativeModel({ 
         model: modelName,
         systemInstruction: config.systemInstruction || `
@@ -84,6 +84,7 @@ export class GeminiLiveService {
       // Convertir ArrayBuffer a base64
       const base64Audio = this.arrayBufferToBase64(audioData);
       
+      // Usar la API multimodal de Gemini para audio
       const result = await this.model.generateContent([
         {
           inlineData: {
@@ -91,7 +92,9 @@ export class GeminiLiveService {
             mimeType: mimeType
           }
         },
-        "Transcribe este audio a texto. Usa puntuación correcta y gramática apropiada. Responde solo con la transcripción, sin comentarios adicionales."
+        {
+          text: "Transcribe este audio a texto. Usa puntuación correcta y gramática apropiada. Responde solo con la transcripción, sin comentarios adicionales."
+        }
       ]);
 
       const response = await result.response;
@@ -101,6 +104,11 @@ export class GeminiLiveService {
       return text;
     } catch (error) {
       console.error('❌ Error procesando audio:', error);
+      console.error('❌ Detalles del error:', {
+        errorType: error.constructor.name,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
   }
@@ -184,7 +192,7 @@ export class GeminiLiveService {
  * Configuración predeterminada para el assessment de IA
  */
 export const ASSESSMENT_GEMINI_CONFIG: GeminiLiveConfig = {
-  model: 'gemini-1.5-flash',
+  model: 'gemini-1.5-pro',
   systemInstruction: `
     Eres un asistente virtual para realizar un assessment de conocimiento sobre IA generativa en Summan SAS.
     

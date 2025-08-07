@@ -235,14 +235,15 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       }
     };
 
-    if (permission === 'granted' && !geminiService) {
+    // Inicializar Gemini cuando el componente se monta
+    if (!geminiService) {
       initGemini();
     }
     
     return () => {
       geminiService?.disconnect();
     };
-  }, [permission]);
+  }, [geminiService]);
 
   // Cargar voces disponibles
   useEffect(() => {
