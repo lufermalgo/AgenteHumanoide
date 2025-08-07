@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { theme } from '../../styles/theme';
-import { useAudioPermissions } from '../../hooks/useAudioPermissions';
-import { GeminiLiveService, ASSESSMENT_GEMINI_CONFIG, type GeminiLiveResponse } from '../../services/geminiLive';
-import AudioPermissionRequest from './AudioPermissionRequest';
+import { GeminiLiveService, ASSESSMENT_GEMINI_CONFIG } from '../../services/geminiLive';
 
 const InterfaceContainer = styled.div`
   display: flex;
@@ -205,8 +203,8 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   onSkip,
   autoReadQuestion = true
 }) => {
-  const [audioState, audioActions] = useAudioPermissions();
-  const { permission, stream } = audioState;
+  // Simplificar: no usar hook complejo, manejar stream directamente como Open WebUI
+  const [stream, setStream] = useState<MediaStream | null>(null);
   
   const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking' | 'error'>('idle');
   const [conversation, setConversation] = useState<ConversationTurn[]>([]);
@@ -326,14 +324,12 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         setStatus('idle');
         // Iniciar escucha automática después de que termine de hablar
         setTimeout(() => {
-          console.log('⏰ Timeout ejecutado, verificando condiciones para auto-escucha...');
-          console.log('- Gemini conectado:', geminiService?.connected);
-          console.log('- Stream disponible:', !!stream);
-          if (geminiService?.connected && stream) {
+          console.log('⏰ Timeout ejecutado, iniciando escucha automática...');
+          if (geminiService?.connected) {
             console.log('🎙️ Iniciando escucha automática...');
             startListening();
           } else {
-            console.warn('⚠️ No se puede iniciar escucha automática - condiciones no cumplidas');
+            console.warn('⚠️ Gemini no conectado');
           }
         }, 500); // Pequeña pausa para transición natural
       };
@@ -350,18 +346,36 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   };
 
   const startListening = async () => {
-    console.log('🎙️ Intentando iniciar grabación...');
-    console.log('- Stream disponible:', !!stream);
+    console.log('🎙️ Iniciando grabación siguiendo patrón Open WebUI...');
     console.log('- Gemini conectado:', geminiService?.connected);
-    console.log('- Estado de permisos:', permission);
-    
-    if (!stream) {
-      console.error('❌ No hay stream disponible');
-      return;
-    }
     
     if (!geminiService?.connected) {
       console.error('❌ Gemini no está conectado');
+      return;
+    }
+    
+    // Solicitar stream como hace Open WebUI - cada vez que se necesita
+    let audioStream: MediaStream | null = null;
+    try {
+      console.log('🎤 Solicitando stream de audio...');
+      audioStream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        }
+      });
+      
+      if (!audioStream) {
+        console.error('❌ No se pudo obtener stream');
+        return;
+      }
+      
+      console.log('✅ Stream obtenido correctamente');
+      setStream(audioStream);
+    } catch (err) {
+      console.error('❌ Error accediendo al micrófono:', err);
+      setStatus('error');
       return;
     }
     
@@ -370,7 +384,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       setStatus('listening');
       audioChunksRef.current = [];
       
-      mediaRecorderRef.current = new MediaRecorder(stream, {
+      mediaRecorderRef.current = new MediaRecorder(audioStream, {
         mimeType: 'audio/webm;codecs=opus'
       });
       
@@ -431,6 +445,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
 
   const stopListening = () => {
     if (mediaRecorderRef.current && isListening) {
+      console.log('⏹️ Deteniendo grabación...');
       mediaRecorderRef.current.stop();
       setIsListening(false);
       
@@ -438,6 +453,14 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       if (silenceTimeoutRef.current) {
         clearTimeout(silenceTimeoutRef.current);
         silenceTimeoutRef.current = null;
+      }
+      
+      // Parar stream como hace Open WebUI
+      if (stream) {
+        console.log('🔇 Parando tracks del stream...');
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+        setStream(null);
       }
     }
   };
@@ -466,22 +489,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     }
   };
 
-  // Si no hay permisos, mostrar mensaje simple
-  if (permission !== 'granted' || !stream) {
-    return (
-      <InterfaceContainer>
-        <Section>
-          <SectionTitle>🎙️ Preparando experiencia de voz...</SectionTitle>
-          <p>Configurando micrófono para la conversación.</p>
-          {permission === 'denied' && (
-            <p style={{ color: '#ff4444' }}>
-              ⚠️ Micrófono bloqueado. Permite el acceso y recarga la página.
-            </p>
-          )}
-        </Section>
-      </InterfaceContainer>
-    );
-  }
+  // Simplificar: no verificar permisos aquí, Open WebUI los maneja en cada uso
 
   return (
     <InterfaceContainer>

@@ -199,12 +199,20 @@ const AssessmentPage: React.FC = () => {
   const handleStartAssessment = async () => {
     console.log('🚀 Iniciando assessment para:', user?.displayName);
     
-    // Solicitar permisos de micrófono inmediatamente
+    // Solicitar permisos de micrófono siguiendo patrón Open WebUI
     try {
       console.log('🎙️ Solicitando permisos de micrófono...');
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      console.log('✅ Permisos concedidos, iniciando assessment');
-      setCurrentQuestion(0);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      if (stream) {
+        console.log('✅ Permisos concedidos, liberando stream inicial');
+        // Parar tracks inmediatamente como hace Open WebUI
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+        
+        console.log('🚀 Iniciando assessment');
+        setCurrentQuestion(0);
+      }
     } catch (error) {
       console.error('❌ Error obteniendo permisos:', error);
       alert('Necesitamos acceso al micrófono para continuar. Por favor, permite el acceso y recarga la página.');
