@@ -84,5 +84,6 @@ temp/
 d-id-config.json
 api-keys.json
 
-# Open WebUI
+# Proyectos de referencia
 @open-webui/
+@live-audio/

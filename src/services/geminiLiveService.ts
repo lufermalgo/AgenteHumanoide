@@ -56,11 +56,12 @@ export class GeminiLiveService {
     };
 
     // Inicializar contextos de audio
-    this.inputContext = new (window.AudioContext || window.webkitAudioContext)({
+    const AudioContextClass = window.AudioContext;
+    this.inputContext = new AudioContextClass({
       sampleRate: mergedConfig.audio.inputSampleRate
     });
 
-    this.outputContext = new (window.AudioContext || window.webkitAudioContext)({
+    this.outputContext = new AudioContextClass({
       sampleRate: mergedConfig.audio.outputSampleRate
     });
   }
@@ -248,10 +249,10 @@ export class GeminiLiveService {
     console.log('🔄 Manejando interrupción...');
     
     // Detener todas las fuentes de audio
-    for (const source of this.audioSources) {
+    this.audioSources.forEach(source => {
       source.stop();
       this.audioSources.delete(source);
-    }
+    });
 
     // Resetear timing
     this.nextStartTime = 0;

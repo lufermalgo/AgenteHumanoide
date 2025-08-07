@@ -47,9 +47,7 @@ const ConversationContainer = styled.div`
   padding: ${theme.spacing.md};
 `;
 
-const ConversationBubble = styled.div.withConfig({
-  shouldComponentUpdate: (nextProps, prevProps) => nextProps.isUser !== prevProps.isUser
-})<{ isUser: boolean }>`
+const ConversationBubble = styled.div<{ isUser: boolean }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.borderRadius.md};
   background-color: ${props => props.isUser ? theme.colors.primary : theme.colors.backgroundCard};
