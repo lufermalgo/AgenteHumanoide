@@ -145,12 +145,21 @@ const LoginPage: React.FC = () => {
     try {
       setIsLoading(true);
       setError('');
+      console.log('🚀 Iniciando login con Google...');
       await signInWithGoogle();
     } catch (error: any) {
-      console.error('Login error:', error);
-      setError(
-        error.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.'
-      );
+      console.error('❌ Error en login:', error);
+      
+      // Manejar errores específicos
+      if (error.code === 'auth/popup-closed-by-user') {
+        setError('Login cancelado por el usuario');
+      } else if (error.code === 'auth/network-request-failed') {
+        setError('Error de red. Verifica que los emuladores estén corriendo.');
+      } else if (error.message?.includes('@summan.com')) {
+        setError('Solo usuarios de @summan.com pueden acceder');
+      } else {
+        setError(error.message || 'Error al iniciar sesión. Por favor, intenta de nuevo.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -176,6 +185,11 @@ const LoginPage: React.FC = () => {
         <InfoBox>
           <strong>Importante:</strong> Solo puedes realizar este assessment una vez. 
           Asegúrate de tener tiempo suficiente antes de comenzar.
+        </InfoBox>
+
+        <InfoBox style={{ backgroundColor: '#2196F3' }}>
+          <strong>🧪 Modo Desarrollo:</strong> Haz clic en "Add new account" en el popup 
+          para crear un usuario de prueba con email @summan.com
         </InfoBox>
 
         <LoginButton 

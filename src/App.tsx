@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from 'styled-components';
-import { AuthProvider } from './components/Auth/AuthProvider';
+import { SimpleAuthProvider as AuthProvider } from './components/Auth/SimpleAuthProvider';
 import LoginPage from './components/Auth/LoginPage';
 import AssessmentPage from './components/QuestionFlow/AssessmentPage';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
