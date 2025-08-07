@@ -187,10 +187,7 @@ const LoginPage: React.FC = () => {
           Asegúrate de tener tiempo suficiente antes de comenzar.
         </InfoBox>
 
-        <InfoBox style={{ backgroundColor: '#2196F3' }}>
-          <strong>🧪 Modo Desarrollo:</strong> Haz clic en "Add new account" en el popup 
-          para crear un usuario de prueba con email @summan.com
-        </InfoBox>
+
 
         <LoginButton 
           onClick={handleGoogleSignIn}
