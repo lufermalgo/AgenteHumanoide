@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useAuth } from '../Auth/AuthProvider';
+import VoiceInterface from '../Voice/VoiceInterface';
 import { theme } from '../../styles/theme';
 
 const AssessmentContainer = styled.div`
@@ -158,12 +159,74 @@ const StatusIndicator = styled.div`
   color: ${theme.colors.textWhite};
 `;
 
+// Preguntas de prueba para el assessment
+const ASSESSMENT_QUESTIONS = [
+  {
+    id: 'q1',
+    text: '¿Qué sabes sobre inteligencia artificial generativa? Cuéntame tu experiencia previa.',
+    category: 'conocimiento_previo'
+  },
+  {
+    id: 'q2', 
+    text: '¿Has usado herramientas como ChatGPT, Gemini o Claude? Si es así, ¿para qué las has utilizado?',
+    category: 'experiencia_herramientas'
+  },
+  {
+    id: 'q3',
+    text: '¿Cómo crees que la IA generativa podría ayudar en tu trabajo diario en Summan?',
+    category: 'aplicacion_laboral'
+  },
+  {
+    id: 'q4',
+    text: '¿Qué preocupaciones o desafíos ves en el uso de IA generativa en el entorno empresarial?',
+    category: 'preocupaciones'
+  },
+  {
+    id: 'q5',
+    text: '¿Te sientes cómodo aprendiendo nuevas herramientas de IA? ¿Qué tipo de capacitación preferirías?',
+    category: 'capacitacion'
+  }
+];
+
 const AssessmentPage: React.FC = () => {
   const { user, logout } = useAuth();
+  const [currentQuestion, setCurrentQuestion] = useState<number>(-1); // -1 = welcome, 0+ = questions
+  const [responses, setResponses] = useState<Record<string, string>>({});
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const handleStartAssessment = () => {
-    // TODO: Implementar lógica para iniciar assessment
-    console.log('Starting assessment...');
+    console.log('🚀 Iniciando assessment para:', user?.displayName);
+    setCurrentQuestion(0);
+  };
+
+  const handleResponse = (response: string) => {
+    const question = ASSESSMENT_QUESTIONS[currentQuestion];
+    console.log('📝 Respuesta recibida:', { questionId: question.id, response });
+    
+    setResponses(prev => ({
+      ...prev,
+      [question.id]: response
+    }));
+  };
+
+  const handleNext = () => {
+    if (currentQuestion < ASSESSMENT_QUESTIONS.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+    } else {
+      // Assessment completado
+      setIsCompleted(true);
+      console.log('✅ Assessment completado:', responses);
+    }
+  };
+
+  const handleSkip = () => {
+    handleNext(); // Por ahora, saltar es igual a continuar
+  };
+
+  const handleRestart = () => {
+    setCurrentQuestion(-1);
+    setResponses({});
+    setIsCompleted(false);
   };
 
   const handleLogout = async () => {
@@ -173,6 +236,154 @@ const AssessmentPage: React.FC = () => {
       console.error('Logout error:', error);
     }
   };
+
+  // Renderizar vista de bienvenida
+  const renderWelcomeView = () => (
+    <MainContent>
+      <ContentSection>
+        <WelcomeMessage>
+          <Title>¡Listo para comenzar!</Title>
+          <Description>
+            Te voy a hacer algunas preguntas sobre inteligencia artificial generativa. 
+            No hay respuestas correctas o incorrectas, solo queremos conocer tu experiencia 
+            y perspectiva actual.
+          </Description>
+          <Description>
+            La sesión durará aproximadamente 5-10 minutos. Puedes responder de forma 
+            natural y conversacional usando tu voz.
+          </Description>
+          <StartButton onClick={handleStartAssessment}>
+            Comenzar Assessment
+          </StartButton>
+        </WelcomeMessage>
+      </ContentSection>
+
+      <AvatarSection>
+        <StatusIndicator>Listo para comenzar</StatusIndicator>
+        <AvatarPlaceholder>
+          🤖
+        </AvatarPlaceholder>
+        <Description>
+          Soy tu asistente virtual para este assessment. 
+          ¡Conversemos sobre IA generativa!
+        </Description>
+      </AvatarSection>
+    </MainContent>
+  );
+
+  // Renderizar vista de pregunta
+  const renderQuestionView = () => {
+    const question = ASSESSMENT_QUESTIONS[currentQuestion];
+    const progress = ((currentQuestion + 1) / ASSESSMENT_QUESTIONS.length) * 100;
+    
+    return (
+      <MainContent>
+        <ContentSection>
+          <div style={{ marginBottom: theme.spacing.lg }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: theme.spacing.md
+            }}>
+              <span style={{ 
+                fontSize: theme.typography.fontSizes.sm,
+                color: theme.colors.textLight 
+              }}>
+                Pregunta {currentQuestion + 1} de {ASSESSMENT_QUESTIONS.length}
+              </span>
+              <span style={{ 
+                fontSize: theme.typography.fontSizes.sm,
+                color: theme.colors.primary,
+                fontWeight: theme.typography.fontWeights.medium
+              }}>
+                {Math.round(progress)}% completado
+              </span>
+            </div>
+            
+            {/* Barra de progreso */}
+            <div style={{
+              width: '100%',
+              height: '4px',
+              backgroundColor: theme.colors.lightGray,
+              borderRadius: '2px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${progress}%`,
+                height: '100%',
+                backgroundColor: theme.colors.primary,
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+          </div>
+
+          <VoiceInterface
+            question={question.text}
+            onResponse={handleResponse}
+            onNext={handleNext}
+            onSkip={handleSkip}
+            autoReadQuestion={true}
+            maxRecordingTime={120} // 2 minutos máximo por respuesta
+          />
+        </ContentSection>
+
+        <AvatarSection>
+          <StatusIndicator>Pregunta {currentQuestion + 1}</StatusIndicator>
+          <AvatarPlaceholder>
+            🎙️
+          </AvatarPlaceholder>
+          <Description>
+            Habla naturalmente. Tu respuesta será transcrita automáticamente.
+          </Description>
+        </AvatarSection>
+      </MainContent>
+    );
+  };
+
+  // Renderizar vista de finalización
+  const renderCompletedView = () => (
+    <MainContent>
+      <ContentSection>
+        <WelcomeMessage>
+          <Title>¡Assessment Completado!</Title>
+          <Description>
+            Gracias por completar el assessment de IA generativa. 
+            Tus respuestas nos ayudarán a diseñar mejores estrategias de capacitación.
+          </Description>
+          <Description>
+            Respondiste {Object.keys(responses).length} de {ASSESSMENT_QUESTIONS.length} preguntas.
+          </Description>
+          
+          <div style={{ 
+            display: 'flex', 
+            gap: theme.spacing.md, 
+            justifyContent: 'center',
+            marginTop: theme.spacing.xl
+          }}>
+            <StartButton onClick={handleRestart} style={{ 
+              backgroundColor: theme.colors.secondary 
+            }}>
+              Realizar Nuevamente
+            </StartButton>
+            <StartButton onClick={handleLogout}>
+              Finalizar Sesión
+            </StartButton>
+          </div>
+        </WelcomeMessage>
+      </ContentSection>
+
+      <AvatarSection>
+        <StatusIndicator>Completado</StatusIndicator>
+        <AvatarPlaceholder>
+          ✅
+        </AvatarPlaceholder>
+        <Description>
+          ¡Excelente trabajo! Tu participación es muy valiosa para Summan.
+        </Description>
+      </AvatarSection>
+    </MainContent>
+  );
 
   return (
     <AssessmentContainer>
@@ -188,36 +399,9 @@ const AssessmentPage: React.FC = () => {
         </UserInfo>
       </Header>
 
-      <MainContent>
-        <ContentSection>
-          <WelcomeMessage>
-            <Title>¡Listo para comenzar!</Title>
-            <Description>
-              Te voy a hacer algunas preguntas sobre inteligencia artificial generativa. 
-              No hay respuestas correctas o incorrectas, solo queremos conocer tu experiencia 
-              y perspectiva actual.
-            </Description>
-            <Description>
-              La sesión durará aproximadamente 5-10 minutos. Puedes responder de forma 
-              natural y conversacional.
-            </Description>
-            <StartButton onClick={handleStartAssessment}>
-              Comenzar Assessment
-            </StartButton>
-          </WelcomeMessage>
-        </ContentSection>
-
-        <AvatarSection>
-          <StatusIndicator>Listo para comenzar</StatusIndicator>
-          <AvatarPlaceholder>
-            🤖
-          </AvatarPlaceholder>
-          <Description>
-            Soy tu asistente virtual para este assessment. 
-            ¡Conversemos sobre IA generativa!
-          </Description>
-        </AvatarSection>
-      </MainContent>
+      {currentQuestion === -1 && renderWelcomeView()}
+      {currentQuestion >= 0 && !isCompleted && renderQuestionView()}
+      {isCompleted && renderCompletedView()}
     </AssessmentContainer>
   );
 };
