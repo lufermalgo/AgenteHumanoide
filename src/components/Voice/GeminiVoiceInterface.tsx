@@ -238,7 +238,14 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
           console.log('⏰ Timeout ejecutado, iniciando escucha automática...');
           if (geminiService?.connected) {
             console.log('🎙️ Iniciando escucha automática...');
-            startListening();
+            // Usar una función que se ejecute después de que startListening esté definido
+            setTimeout(() => {
+              if (typeof window !== 'undefined' && window.speechSynthesis) {
+                // Iniciar escucha automáticamente
+                const event = new CustomEvent('startListening');
+                window.dispatchEvent(event);
+              }
+            }, 100);
           } else {
             console.warn('⚠️ Gemini no conectado');
           }
@@ -255,7 +262,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       console.error('❌ Error leyendo pregunta:', error);
       setStatus('idle');
     }
-  }, [geminiService?.connected, question, isListening, startListening]);
+  }, [geminiService?.connected, question, isListening]);
 
   // Inicializar Gemini Live API
   useEffect(() => {
@@ -343,6 +350,21 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     
     console.log('✅ Recursos de audio limpiados');
   }, []);
+
+  // Event listener para iniciar escucha automáticamente
+  useEffect(() => {
+    const handleStartListening = () => {
+      if (geminiService?.connected && !isListening) {
+        startListening();
+      }
+    };
+
+    window.addEventListener('startListening', handleStartListening);
+    
+    return () => {
+      window.removeEventListener('startListening', handleStartListening);
+    };
+  }, [geminiService?.connected, isListening, startListening]);
 
   // Limpiar recursos cuando el componente se desmonte
   useEffect(() => {
@@ -503,7 +525,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       setStatus('error');
       setIsListening(false);
     }
-  }, [geminiService?.connected, addConversationTurn, geminiService]);
+  }, [addConversationTurn]);
 
 
 
