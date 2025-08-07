@@ -216,6 +216,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Inicializar Gemini Live API
   useEffect(() => {
@@ -319,7 +320,16 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         console.log('🗣️ Usando voz:', preferredVoice.name, preferredVoice.lang);
       }
       
-      utterance.onend = () => setStatus('idle');
+      utterance.onend = () => {
+        console.log('🗣️ Agente terminó de hablar, iniciando escucha automática...');
+        setStatus('idle');
+        // Iniciar escucha automática después de que termine de hablar
+        setTimeout(() => {
+          if (geminiService?.connected && stream) {
+            startListening();
+          }
+        }, 500); // Pequeña pausa para transición natural
+      };
       utterance.onerror = (error) => {
         console.error('❌ Error en síntesis de voz:', error);
         setStatus('idle');
@@ -385,6 +395,12 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       
       mediaRecorderRef.current.start(100); // Capturar cada 100ms
       
+      // Auto-detener después de 5 segundos de silencio (simulado por tiempo máximo)
+      silenceTimeoutRef.current = setTimeout(() => {
+        console.log('🔇 Deteniendo grabación automáticamente (silencio detectado)');
+        stopListening();
+      }, 5000); // 5 segundos máximo de grabación continua
+      
     } catch (error) {
       console.error('❌ Error iniciando grabación:', error);
       setStatus('error');
@@ -396,6 +412,12 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     if (mediaRecorderRef.current && isListening) {
       mediaRecorderRef.current.stop();
       setIsListening(false);
+      
+      // Limpiar timeout de silencio
+      if (silenceTimeoutRef.current) {
+        clearTimeout(silenceTimeoutRef.current);
+        silenceTimeoutRef.current = null;
+      }
     }
   };
 
@@ -478,26 +500,21 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         </ConversationArea>
       </Section>
 
-      {/* Controles de voz */}
+      {/* Estado de conversación */}
       <VoiceControls>
-        <VoiceButton
-          isActive={isListening}
-          onClick={handleVoiceToggle}
-          disabled={status === 'processing' || status === 'speaking' || !geminiService?.connected}
-          title={isListening ? 'Detener grabación' : 'Iniciar grabación'}
-        >
-          {isListening ? '⏹️' : '🎙️'}
-        </VoiceButton>
+        <StatusIndicator status={status}>
+          {getStatusText()}
+        </StatusIndicator>
         
-        {!hasReadQuestion && (
+        {/* Solo mostrar botón manual si hay problemas */}
+        {status === 'idle' && !isListening && conversation.length === 0 && (
           <VoiceButton
             isActive={false}
             variant="secondary"
-            onClick={readQuestion}
-            disabled={!geminiService?.connected}
-            title="Leer pregunta"
+            onClick={handleVoiceToggle}
+            title="Iniciar conversación manualmente"
           >
-            🔊
+            🎙️ Hablar
           </VoiceButton>
         )}
       </VoiceControls>
