@@ -14,25 +14,29 @@
 - [x] Estructura de componentes React + TypeScript
 - [x] Configuración Firebase (hosting, functions, firestore)
 - [x] Prompt detallado para Figma Make
+- [x] Sistema de Autenticación Google OAuth (@summan.com)
+- [x] Integración Gemini API (STT + TTS)
+- [x] Experiencia de voz fluida sin botones
+- [x] Motor de Preguntas Estructurado
 
 ---
 
-## 📅 **DÍA 1 - INFRAESTRUCTURA CORE**
+## 📅 **DÍA 1 - INFRAESTRUCTURA CORE** ✅ **COMPLETADO**
 *Fecha: 8 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
-- [ ] **Firebase Functions Setup**
+- [x] **Firebase Functions Setup**
   - Implementar funciones de autenticación
   - Configurar Firestore con reglas de seguridad
   - Testing de conexión GCP
 
-- [ ] **Sistema de Autenticación**
+- [x] **Sistema de Autenticación**
   - Componente LoginPage
   - AuthProvider con Context
   - ProtectedRoute wrapper
   - Integración Google OAuth (@summan.com)
 
-- [ ] **Análisis Open WebUI**
+- [x] **Análisis Open WebUI**
   - Extraer componentes STT/TTS
   - Adaptar lógica de voice interaction
   - Documentar patrones reutilizables
@@ -42,11 +46,11 @@
 
 ---
 
-## 📅 **DÍA 2 - INTEGRACIÓN DE SERVICIOS**
+## 📅 **DÍA 2 - INTEGRACIÓN DE SERVICIOS** 🔄 **EN PROGRESO**
 *Fecha: 9 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
-- [ ] **Sistema de Voz**
+- [x] **Sistema de Voz**
   - Componente VoiceInput (STT)
   - Integración Gemini Live API
   - Control de estados de conversación
@@ -58,7 +62,7 @@
   - Fallback UI (solo voz/texto)
   - Estados visuales de conversación
 
-- [ ] **Motor de Preguntas**
+- [x] **Motor de Preguntas**
   - Componente QuestionFlow
   - Navegación entre preguntas
   - Validación de respuestas
