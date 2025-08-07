@@ -29,7 +29,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('🔥 Firebase Auth: Iniciando listener de estado...');
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        console.log('✅ Usuario ya autenticado:', user.displayName, user.email);
+      } else {
+        console.log('❌ No hay usuario autenticado');
+      }
       setUser(user);
       setLoading(false);
     });

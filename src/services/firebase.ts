@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, connectAuthEmulator, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -33,12 +33,17 @@ export const googleProvider = new GoogleAuthProvider();
 
 // Configurar el proveedor de Google
 googleProvider.setCustomParameters({
-  prompt: 'select_account',
+  // prompt: 'select_account', // Comentado para permitir login automático
   hd: 'summan.com' // Restringir a dominio de Summan SAS
 });
 
 // Configurar scopes necesarios
 googleProvider.addScope('email');
 googleProvider.addScope('profile');
+
+// Configurar persistencia de autenticación
+setPersistence(auth, browserLocalPersistence).catch((error) => {
+  console.warn('No se pudo configurar persistencia de auth:', error);
+});
 
 export default app;
