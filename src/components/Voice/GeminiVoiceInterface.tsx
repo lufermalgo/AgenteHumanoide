@@ -221,23 +221,8 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       try {
         const service = new GeminiLiveService();
         
-        // Configurar callbacks
-        service.onTextResponse = (text: string) => {
-          console.log('📝 Respuesta de texto de Gemini:', text);
-          addConversationTurn(false, text);
-          setStatus('idle');
-        };
-        
-        service.onAudioResponse = (audioData: string) => {
-          console.log('🔊 Respuesta de audio de Gemini');
-          setStatus('speaking');
-          // TODO: Reproducir audio
-        };
-        
-        service.onTurnComplete = () => {
-          console.log('✅ Turno completado');
-          setStatus('idle');
-        };
+        // El servicio ahora funciona de forma síncrona con la API estándar
+        console.log('✅ Servicio Gemini listo para transcripción');
         
         await service.connect(ASSESSMENT_GEMINI_CONFIG);
         setGeminiService(service);
@@ -286,7 +271,12 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     
     try {
       setStatus('speaking');
-      await geminiService.sendText(`Lee esta pregunta en voz alta de forma natural y amigable: "${question}"`);
+      // Usar síntesis de voz del navegador para leer la pregunta
+      const utterance = new SpeechSynthesisUtterance(question);
+      utterance.lang = 'es-ES';
+      utterance.rate = 0.9;
+      utterance.onend = () => setStatus('idle');
+      speechSynthesis.speak(utterance);
     } catch (error) {
       console.error('❌ Error leyendo pregunta:', error);
       setStatus('error');
@@ -317,8 +307,18 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         
         setStatus('processing');
         
-        // Enviar audio a Gemini Live
-        await geminiService.sendAudio(arrayBuffer, 'audio/webm;codecs=opus');
+        try {
+          // Procesar audio con Gemini AI para transcripción
+          const transcription = await geminiService.processAudio(arrayBuffer, 'audio/webm;codecs=opus');
+          
+          // Agregar transcripción a la conversación
+          addConversationTurn(true, transcription);
+          setStatus('idle');
+          
+        } catch (error) {
+          console.error('❌ Error procesando audio:', error);
+          setStatus('error');
+        }
       };
       
       mediaRecorderRef.current.start(100); // Capturar cada 100ms
