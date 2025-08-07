@@ -76,45 +76,7 @@ const VoiceControls = styled.div`
   align-items: center;
 `;
 
-const VoiceButton = styled.button.withConfig({
-  shouldForwardProp: (prop) => !['isActive'].includes(prop)
-})<{ isActive: boolean; variant?: 'primary' | 'secondary' }>`
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  border: 4px solid ${props => {
-    if (props.variant === 'secondary') return theme.colors.secondary;
-    return props.isActive ? '#ff4444' : theme.colors.primary;
-  }};
-  background: ${props => {
-    if (props.variant === 'secondary') return theme.colors.secondary;
-    return props.isActive ? '#ff4444' : theme.colors.primary;
-  }};
-  color: white;
-  font-size: 2rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
 
-  &:hover {
-    transform: scale(1.05);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  ${props => props.isActive && `
-    animation: pulse 1.5s infinite;
-    
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.7); }
-      70% { box-shadow: 0 0 0 20px rgba(255, 68, 68, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(255, 68, 68, 0); }
-    }
-  `}
-`;
 
 const StatusIndicator = styled.div<{ status: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' }>`
   display: flex;
@@ -272,7 +234,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       readQuestion();
       setHasReadQuestion(true);
     }
-  }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion]);
+  }, [autoReadQuestion, geminiService?.connected, question, hasReadQuestion, readQuestion]);
 
   const addConversationTurn = (isUser: boolean, text: string, audioUrl?: string) => {
     const turn: ConversationTurn = {
@@ -380,8 +342,8 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         setIsListening(true);
         setStatus('listening');
         
-        // Crear SpeechRecognition object
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        // Crear SpeechRecognition object con tipos correctos
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
         const speechRecognition = new SpeechRecognition();
         
         // Configurar como Open WebUI
@@ -496,25 +458,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
     }
   };
 
-  const stopListening = () => {
-    console.log('⏹️ stopListening llamado');
-    setIsListening(false);
-    setStatus('idle');
-    
-    // Limpiar timeouts
-    if (silenceTimeoutRef.current) {
-      clearTimeout(silenceTimeoutRef.current);
-      silenceTimeoutRef.current = null;
-    }
-    
-    // Limpiar stream si existe
-    if (stream) {
-      console.log('🔇 Parando tracks del stream...');
-      const tracks = stream.getTracks();
-      tracks.forEach((track) => track.stop());
-      setStream(null);
-    }
-  };
+
 
 
 
