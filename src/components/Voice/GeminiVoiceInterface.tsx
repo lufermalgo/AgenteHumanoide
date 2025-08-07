@@ -78,7 +78,7 @@ const VoiceControls = styled.div`
 
 
 
-const StatusIndicator = styled.div<{ status: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' }>`
+const StatusIndicator = styled.div<{ status: 'idle' | 'listening' | 'processing' | 'speaking' | 'error' | 'ready-to-listen' }>`
   display: flex;
   align-items: center;
   gap: ${theme.spacing.sm};
@@ -92,6 +92,7 @@ const StatusIndicator = styled.div<{ status: 'idle' | 'listening' | 'processing'
       case 'listening': return '#2196F3';
       case 'processing': return '#FF9800';
       case 'speaking': return '#4CAF50';
+      case 'ready-to-listen': return '#9C27B0';
       case 'error': return '#F44336';
       default: return theme.colors.lightGray;
     }
@@ -322,7 +323,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       console.log('🎙️ Estado ready-to-listen detectado, iniciando escucha...');
       startListening();
     }
-  }, [status, geminiService?.connected, isListening, startListening]);
+  }, [status, geminiService?.connected, isListening]);
 
   // Función de limpieza para detener todos los recursos de audio
   const cleanupAudioResources = useCallback(() => {
@@ -514,7 +515,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       setStatus('error');
       setIsListening(false);
     }
-  }, [addConversationTurn]);
+  }, [addConversationTurn, geminiService]);
 
 
 
