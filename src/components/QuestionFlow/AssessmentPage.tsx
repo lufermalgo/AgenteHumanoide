@@ -165,14 +165,31 @@ const StatusIndicator = styled.div`
 
 const AssessmentPage: React.FC = () => {
   const { user, logout } = useAuth();
-  const [assessmentEngine] = useState(() => new AssessmentEngine(ASSESSMENT_QUESTIONS));
+  const [assessmentEngine] = useState(() => new AssessmentEngine());
   const [currentSession, setCurrentSession] = useState<AssessmentSession | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState<number>(-1); // -1 = welcome, 0+ = questions
+  const [isLoading, setIsLoading] = useState(true);
   
   // Refs para tracking de tiempo
   const questionStartTimeRef = useRef<number>(0);
   const responseTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Efecto para inicializar el motor de assessment
+  useEffect(() => {
+    const initializeEngine = async () => {
+      try {
+        setIsLoading(true);
+        await assessmentEngine.initialize();
+      } catch (error) {
+        console.error('❌ Error inicializando motor:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeEngine();
+  }, [assessmentEngine]);
 
   // Efecto para manejar tiempo máximo de respuesta
   useEffect(() => {
@@ -537,9 +554,22 @@ const AssessmentPage: React.FC = () => {
         </UserInfo>
       </Header>
 
-      {currentQuestion === -1 && renderWelcomeView()}
-      {currentQuestion >= 0 && !isCompleted && renderQuestionView()}
-      {isCompleted && renderCompletedView()}
+      {isLoading ? (
+        <MainContent>
+          <ContentSection>
+            <div style={{ textAlign: 'center', padding: theme.spacing.xl }}>
+              <div style={{ fontSize: '24px', marginBottom: theme.spacing.md }}>🔄</div>
+              <div>Cargando assessment...</div>
+            </div>
+          </ContentSection>
+        </MainContent>
+      ) : (
+        <>
+          {currentQuestion === -1 && renderWelcomeView()}
+          {currentQuestion >= 0 && !isCompleted && renderQuestionView()}
+          {isCompleted && renderCompletedView()}
+        </>
+      )}
     </AssessmentContainer>
   );
 };

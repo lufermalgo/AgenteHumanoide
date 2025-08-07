@@ -30,9 +30,41 @@ export interface AssessmentSession {
 export class AssessmentEngine {
   private questions: AssessmentQuestion[];
   private session: AssessmentSession | null = null;
+  private questionLoader: QuestionLoader;
+  private config: AssessmentConfig | null = null;
 
-  constructor(questions: AssessmentQuestion[]) {
-    this.questions = questions;
+  constructor(questions?: AssessmentQuestion[]) {
+    this.questions = questions || ASSESSMENT_QUESTIONS;
+    this.questionLoader = QuestionLoader.getInstance();
+  }
+
+  /**
+   * Inicializa el motor con preguntas cargadas dinámicamente
+   */
+  async initialize(): Promise<void> {
+    try {
+      console.log('🚀 Inicializando AssessmentEngine...');
+      this.config = await this.questionLoader.loadQuestions();
+      this.questions = this.config.questions;
+      console.log('✅ AssessmentEngine inicializado con', this.questions.length, 'preguntas');
+    } catch (error) {
+      console.error('❌ Error inicializando AssessmentEngine:', error);
+      // Usar preguntas por defecto
+      this.questions = ASSESSMENT_QUESTIONS;
+    }
+  }
+
+  /**
+   * Recarga las preguntas desde el archivo JSON
+   */
+  async reloadQuestions(): Promise<void> {
+    try {
+      console.log('🔄 Recargando preguntas...');
+      this.questionLoader.clearCache();
+      await this.initialize();
+    } catch (error) {
+      console.error('❌ Error recargando preguntas:', error);
+    }
   }
 
   // Iniciar una nueva sesión de assessment
@@ -138,7 +170,7 @@ export class AssessmentEngine {
     return { 
       success: true, 
       isCompleted: false, 
-      nextQuestion 
+      nextQuestion: nextQuestion || undefined
     };
   }
 
@@ -290,7 +322,10 @@ export class AssessmentEngine {
   }
 }
 
-// Preguntas del assessment de IA generativa
+// Importar QuestionLoader para cargar preguntas dinámicamente
+import { QuestionLoader, AssessmentConfig, AssessmentQuestion } from './questionLoader';
+
+// Preguntas del assessment de IA generativa (fallback)
 export const ASSESSMENT_QUESTIONS: AssessmentQuestion[] = [
   {
     id: 'q1',

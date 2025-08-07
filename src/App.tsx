@@ -4,6 +4,7 @@ import { ThemeProvider } from 'styled-components';
 import { AuthProvider } from './components/Auth/AuthProvider';
 import LoginPage from './components/Auth/LoginPage';
 import AssessmentPage from './components/QuestionFlow/AssessmentPage';
+import AdminPanel from './components/Admin/AdminPanel';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import { GlobalStyles } from './styles/GlobalStyles';
 import { theme } from './styles/theme';
@@ -29,6 +30,14 @@ const App: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <AssessmentPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <ProtectedRoute>
+                  <AdminPanel />
                 </ProtectedRoute>
               } 
             />
