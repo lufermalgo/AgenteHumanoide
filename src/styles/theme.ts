@@ -18,6 +18,7 @@ export const theme = {
     text: '#333333',
     textLight: '#666666',
     textWhite: '#ffffff',
+    lightGray: '#e0e0e0',
     
     // Estados
     success: '#4caf50',

@@ -29,7 +29,7 @@ export const detectBrowserCapabilities = (): BrowserCapabilities => {
     hasMediaRecorder: typeof MediaRecorder !== 'undefined',
     hasSpeechRecognition: 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window,
     hasSpeechSynthesis: 'speechSynthesis' in window,
-    hasGetUserMedia: navigator.mediaDevices && navigator.mediaDevices.getUserMedia,
+    hasGetUserMedia: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
     isHTTPS: window.location.protocol === 'https:' || window.location.hostname === 'localhost',
     browser,
     isMobile
@@ -62,14 +62,14 @@ export const requestMicrophonePermission = async (): Promise<MediaStream | null>
     
     console.log('✅ Permisos de micrófono concedidos');
     return stream;
-  } catch (error) {
+  } catch (error: any) {
     console.error('❌ Error al solicitar permisos de micrófono:', error);
     
-    if (error.name === 'NotAllowedError') {
+    if (error?.name === 'NotAllowedError') {
       throw new Error('Permisos de micrófono denegados. Por favor, habilítalos en la configuración del navegador.');
-    } else if (error.name === 'NotFoundError') {
+    } else if (error?.name === 'NotFoundError') {
       throw new Error('No se encontró ningún micrófono. Verifica que esté conectado.');
-    } else if (error.name === 'NotSupportedError') {
+    } else if (error?.name === 'NotSupportedError') {
       throw new Error('Tu navegador no soporta grabación de audio.');
     } else {
       throw new Error('Error al acceder al micrófono. Verifica permisos y configuración.');

@@ -146,7 +146,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
 
   // Referencias
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const speechRecognitionRef = useRef<SpeechRecognition | null>(null);
+  const speechRecognitionRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
@@ -258,7 +258,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       throw new Error('Web Speech API no soportada en este navegador');
     }
 
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     speechRecognitionRef.current = new SpeechRecognition();
     
     const recognition = speechRecognitionRef.current;
@@ -269,7 +269,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
     let silenceTimer: NodeJS.Timeout | null = null;
     let finalTranscript = '';
 
-    recognition.onresult = (event) => {
+    recognition.onresult = (event: any) => {
       let interimTranscript = '';
       
       for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -295,7 +295,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       }
     };
 
-    recognition.onerror = (event) => {
+    recognition.onerror = (event: any) => {
       console.error('Error en Speech Recognition:', event.error);
       const errorMessage = `Error de reconocimiento: ${event.error}`;
       setError(errorMessage);

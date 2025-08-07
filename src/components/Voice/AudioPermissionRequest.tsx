@@ -2,39 +2,39 @@ import React from 'react';
 import styled from 'styled-components';
 import { useAudioPermissions } from '../../hooks/useAudioPermissions';
 import { theme } from '../../styles/theme';
+import LoadingSpinner from '../UI/LoadingSpinner';
 
 const PermissionContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: ${theme.spacing.xl};
-  background: ${theme.colors.backgroundCard};
-  border-radius: ${theme.borderRadius.lg};
-  box-shadow: ${theme.shadows.md};
-  max-width: 500px;
-  margin: 0 auto;
+  min-height: 100vh;
+  background-color: ${theme.colors.background};
+  color: ${theme.colors.text};
+  padding: ${theme.spacing.lg};
   text-align: center;
 `;
 
-const MicrophoneIcon = styled.div`
-  font-size: 4rem;
-  margin-bottom: ${theme.spacing.lg};
-  color: ${theme.colors.primary};
+const Card = styled.div`
+  background-color: ${theme.colors.backgroundCard};
+  border-radius: ${theme.borderRadius.lg};
+  box-shadow: ${theme.shadows.md};
+  padding: ${theme.spacing.xxl};
+  max-width: 600px;
+  width: 100%;
 `;
 
 const Title = styled.h2`
-  font-size: ${theme.typography.fontSizes.xl};
-  font-weight: ${theme.typography.fontWeights.semibold};
-  color: ${theme.colors.text};
+  color: ${theme.colors.primary};
   margin-bottom: ${theme.spacing.md};
+  font-size: ${theme.typography.fontSizes.xxl};
 `;
 
 const Description = styled.p`
-  font-size: ${theme.typography.fontSizes.md};
   color: ${theme.colors.textLight};
   margin-bottom: ${theme.spacing.lg};
-  line-height: 1.5;
+  font-size: ${theme.typography.fontSizes.md};
 `;
 
 const PermissionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
@@ -42,16 +42,15 @@ const PermissionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
   color: ${props => props.variant === 'secondary' ? theme.colors.text : 'white'};
   border: none;
   border-radius: ${theme.borderRadius.md};
-  padding: ${theme.spacing.md} ${theme.spacing.xl};
-  font-size: ${theme.typography.fontSizes.md};
-  font-weight: ${theme.typography.fontWeights.medium};
+  padding: ${theme.spacing.md} ${theme.spacing.lg};
+  font-size: ${theme.typography.fontSizes.lg};
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin: 0 ${theme.spacing.sm};
+  transition: all 0.3s ease;
+  margin: ${theme.spacing.sm};
 
   &:hover {
-    background: ${props => props.variant === 'secondary' ? theme.colors.tertiary : theme.colors.secondary};
     transform: translateY(-1px);
+    background: ${props => props.variant === 'secondary' ? theme.colors.tertiary : theme.colors.secondary};
   }
 
   &:disabled {
@@ -62,46 +61,52 @@ const PermissionButton = styled.button<{ variant?: 'primary' | 'secondary' }>`
 `;
 
 const ErrorMessage = styled.div`
-  background: ${theme.colors.error};
-  color: white;
+  background-color: ${theme.colors.error};
+  color: ${theme.colors.textWhite};
   padding: ${theme.spacing.md};
   border-radius: ${theme.borderRadius.md};
-  margin: ${theme.spacing.md} 0;
+  margin-top: ${theme.spacing.lg};
   font-size: ${theme.typography.fontSizes.sm};
 `;
 
-const InfoBox = styled.div`
-  background: ${theme.colors.info};
-  color: white;
+const InfoBox = styled.div<{ variant?: 'info' | 'warning' | 'error' }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.borderRadius.md};
-  margin: ${theme.spacing.md} 0;
+  margin-top: ${theme.spacing.lg};
   font-size: ${theme.typography.fontSizes.sm};
-  text-align: left;
-`;
-
-const CapabilityList = styled.ul`
-  text-align: left;
-  margin: ${theme.spacing.md} 0;
-  padding-left: ${theme.spacing.lg};
-  color: ${theme.colors.textLight};
-  font-size: ${theme.typography.fontSizes.sm};
-`;
-
-const StatusIndicator = styled.div<{ status: 'success' | 'warning' | 'error' }>`
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  margin-right: ${theme.spacing.sm};
+  
   background: ${props => {
-    switch (props.status) {
-      case 'success': return '#4CAF50';
-      case 'warning': return '#FF9800';
-      case 'error': return '#F44336';
+    switch (props.variant) {
+      case 'info': return theme.colors.info;
+      case 'warning': return theme.colors.warning;
+      case 'error': return theme.colors.error;
       default: return theme.colors.tertiary;
     }
   }};
+  color: white;
+`;
+
+const Icon = styled.span`
+  font-size: ${theme.typography.fontSizes.xxxl};
+  margin-bottom: ${theme.spacing.md};
+  color: ${theme.colors.primary};
+`;
+
+const CapabilityList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin-top: ${theme.spacing.lg};
+  
+  li {
+    padding: ${theme.spacing.sm} 0;
+    font-size: ${theme.typography.fontSizes.sm};
+    color: ${theme.colors.textLight};
+    border-bottom: 1px solid ${theme.colors.lightGray};
+    
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 `;
 
 interface AudioPermissionRequestProps {
@@ -113,143 +118,89 @@ const AudioPermissionRequest: React.FC<AudioPermissionRequestProps> = ({
   onPermissionGranted, 
   onSkip 
 }) => {
-  const [audioState, audioActions] = useAudioPermissions();
-  const { permission, stream, capabilities, error, isSupported } = audioState;
-  const { requestPermission, getInstructions } = audioActions;
+  const { permissionState, stream, error, requestPermission, browserSupportInfo } = useAudioPermissions();
+  const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
-    if (permission === 'granted' && stream) {
+    if (permissionState === 'granted' && stream) {
       onPermissionGranted(stream);
     }
-  }, [permission, stream, onPermissionGranted]);
+  }, [permissionState, stream, onPermissionGranted]);
 
   const handleRequestPermission = async () => {
+    setIsLoading(true);
     try {
       await requestPermission();
     } catch (err) {
       console.error('Error requesting permission:', err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const getPermissionIcon = () => {
-    switch (permission) {
-      case 'granted': return '✅';
-      case 'denied': return '❌';
-      case 'checking': return '🔄';
-      case 'error': return '⚠️';
-      default: return '🎙️';
-    }
-  };
-
-  const getPermissionTitle = () => {
-    switch (permission) {
-      case 'granted': return '¡Micrófono Habilitado!';
-      case 'denied': return 'Permisos Denegados';
-      case 'checking': return 'Verificando Permisos...';
-      case 'error': return 'Error de Compatibilidad';
-      default: return 'Permisos de Micrófono Requeridos';
-    }
-  };
-
-  const getPermissionDescription = () => {
-    switch (permission) {
-      case 'granted': 
-        return 'Perfecto, tu micrófono está listo para el assessment de voz.';
-      case 'denied': 
-        return 'Necesitamos acceso al micrófono para el assessment de voz. Por favor, habilita los permisos.';
-      case 'checking': 
-        return 'Verificando el acceso al micrófono...';
-      case 'error': 
-        return 'Tu navegador no soporta las funciones de voz necesarias para este assessment.';
-      default: 
-        return 'Para participar en el assessment de voz, necesitamos acceso a tu micrófono. Tus respuestas serán procesadas de forma segura.';
-    }
-  };
-
-  if (!isSupported) {
-    return (
-      <PermissionContainer>
-        <MicrophoneIcon>⚠️</MicrophoneIcon>
-        <Title>Navegador No Compatible</Title>
-        <Description>
-          Tu navegador no soporta las funciones de grabación de audio necesarias.
-        </Description>
-        
-        <CapabilityList>
-          <li>
-            <StatusIndicator status={capabilities.hasGetUserMedia ? 'success' : 'error'} />
-            getUserMedia: {capabilities.hasGetUserMedia ? 'Soportado' : 'No soportado'}
-          </li>
-          <li>
-            <StatusIndicator status={capabilities.hasMediaRecorder ? 'success' : 'error'} />
-            MediaRecorder: {capabilities.hasMediaRecorder ? 'Soportado' : 'No soportado'}
-          </li>
-          <li>
-            <StatusIndicator status={capabilities.isHTTPS ? 'success' : 'error'} />
-            HTTPS: {capabilities.isHTTPS ? 'Habilitado' : 'Requerido'}
-          </li>
-        </CapabilityList>
-
-        <InfoBox>
-          <strong>Recomendación:</strong> Usa Chrome, Firefox o Edge en su versión más reciente.
-        </InfoBox>
-
-        {onSkip && (
-          <PermissionButton variant="secondary" onClick={onSkip}>
-            Continuar sin Voz
-          </PermissionButton>
-        )}
-      </PermissionContainer>
-    );
+  if (permissionState === 'granted' && stream) {
+    return <LoadingSpinner text="Micrófono autorizado. Iniciando experiencia de voz..." />;
   }
 
   return (
     <PermissionContainer>
-      <MicrophoneIcon>{getPermissionIcon()}</MicrophoneIcon>
-      <Title>{getPermissionTitle()}</Title>
-      <Description>{getPermissionDescription()}</Description>
+      <Card>
+        <Icon>🎤</Icon>
+        <Title>Permiso de Micrófono Necesario</Title>
+        <Description>
+          Para una experiencia interactiva completa con el agente de IA, necesitamos acceso a tu micrófono.
+          Esto nos permitirá escucharte y responder en tiempo real.
+        </Description>
 
-      {error && (
-        <ErrorMessage>
-          {error}
-        </ErrorMessage>
-      )}
-
-      {permission === 'denied' && (
-        <InfoBox>
-          <strong>Instrucciones:</strong><br />
-          {getInstructions()}
-        </InfoBox>
-      )}
-
-      <div style={{ marginTop: theme.spacing.lg }}>
-        {permission === 'prompt' && (
+        {permissionState === 'prompt' && (
           <PermissionButton 
             onClick={handleRequestPermission}
-            disabled={permission === 'checking'}
+            disabled={isLoading}
           >
-            {permission === 'checking' ? 'Verificando...' : 'Habilitar Micrófono'}
+            {isLoading ? 'Solicitando...' : 'Autorizar Micrófono'}
           </PermissionButton>
         )}
 
-        {permission === 'denied' && (
-          <PermissionButton onClick={handleRequestPermission}>
-            Intentar de Nuevo
-          </PermissionButton>
+        {permissionState === 'denied' && (
+          <>
+            <ErrorMessage>
+              {error || 'Permiso de micrófono denegado. Por favor, habilítalo en la configuración de tu navegador para usar la voz.'}
+            </ErrorMessage>
+            <PermissionButton onClick={handleRequestPermission}>
+              Intentar de Nuevo
+            </PermissionButton>
+          </>
         )}
 
-        {onSkip && permission !== 'granted' && (
+        {permissionState === 'unavailable' && (
+          <>
+            <ErrorMessage>
+              {error || 'La funcionalidad de micrófono no está disponible en este navegador o dispositivo.'}
+            </ErrorMessage>
+            {!browserSupportInfo.isHttps && browserSupportInfo.httpsRequired && (
+              <InfoBox variant="info">
+                <strong>Sugerencia:</strong> Intenta acceder a esta página usando HTTPS (https://...) o en un navegador compatible.
+              </InfoBox>
+            )}
+          </>
+        )}
+
+        {onSkip && permissionState !== 'granted' && (
           <PermissionButton variant="secondary" onClick={onSkip}>
             Continuar sin Voz
           </PermissionButton>
         )}
-      </div>
 
-      <CapabilityList style={{ marginTop: theme.spacing.lg }}>
-        <li>Navegador: {capabilities.browser} {capabilities.isMobile ? '(móvil)' : '(escritorio)'}</li>
-        <li>Speech Recognition: {capabilities.hasSpeechRecognition ? 'Soportado' : 'No soportado'}</li>
-        <li>Speech Synthesis: {capabilities.hasSpeechSynthesis ? 'Soportado' : 'No soportado'}</li>
-      </CapabilityList>
+        <CapabilityList>
+          <li>Navegador: {browserSupportInfo.browserType} {browserSupportInfo.isMobile ? '(móvil)' : '(escritorio)'}</li>
+          <li>MediaRecorder: {browserSupportInfo.mediaRecorder ? 'Soportado' : 'No soportado'}</li>
+          <li>HTTPS: {browserSupportInfo.isHttps ? 'Sí' : 'No'}</li>
+        </CapabilityList>
+
+        <Description style={{ marginTop: theme.spacing.xl, fontSize: theme.typography.fontSizes.sm }}>
+          Tu privacidad es importante. El audio solo se usará para la transcripción durante el assessment.
+        </Description>
+      </Card>
     </PermissionContainer>
   );
 };
