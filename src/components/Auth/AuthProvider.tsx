@@ -55,19 +55,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('✅ Usuario autorizado:', result.user.displayName, result.user.email);
       // El user se actualiza automáticamente por onAuthStateChanged
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Error en autenticación:', error);
       setUser(null);
       
       // Mejorar mensajes de error
-      if (error.code === 'auth/popup-closed-by-user') {
+      if (error?.code === 'auth/popup-closed-by-user') {
         throw new Error('Login cancelado por el usuario');
-      } else if (error.code === 'auth/network-request-failed') {
+      } else if (error?.code === 'auth/network-request-failed') {
         throw new Error('Error de red. Verifica tu conexión a internet.');
-      } else if (error.message?.includes('@summan.com')) {
+      } else if (error?.message?.includes('@summan.com')) {
         throw error; // Mantener mensaje personalizado de dominio
       } else {
-        throw new Error('Error al iniciar sesión. Intenta de nuevo.');
+        throw new Error(error?.message || 'Error al iniciar sesión. Intenta de nuevo.');
       }
     } finally {
       setLoading(false);
@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setLoading(true);
       await signOut(auth);
       setUser(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Logout error:', error);
       throw error;
     } finally {
