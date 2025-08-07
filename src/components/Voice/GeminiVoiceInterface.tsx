@@ -51,7 +51,9 @@ const ConversationArea = styled.div`
   gap: ${theme.spacing.md};
 `;
 
-const ConversationBubble = styled.div<{ isUser: boolean }>`
+const ConversationBubble = styled.div.withConfig({
+  shouldForwardProp: (prop) => !['isUser'].includes(prop)
+})<{ isUser: boolean }>`
   padding: ${theme.spacing.md};
   border-radius: ${theme.borderRadius.md};
   max-width: 80%;
@@ -320,7 +322,26 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         console.log('🗣️ Usando voz:', preferredVoice.name, preferredVoice.lang);
       }
       
+      // Detectar interrupciones del usuario
+      const checkForInterruption = () => {
+        if (isListening) {
+          console.log('🗣️ Usuario interrumpió al agente');
+          speechSynthesis.cancel(); // Parar al agente
+          setStatus('listening');
+          return true;
+        }
+        return false;
+      };
+      
+      // Verificar interrupciones cada 100ms
+      const interruptionInterval = setInterval(() => {
+        if (checkForInterruption()) {
+          clearInterval(interruptionInterval);
+        }
+      }, 100);
+      
       utterance.onend = () => {
+        clearInterval(interruptionInterval);
         console.log('🗣️ Agente terminó de hablar, iniciando escucha automática...');
         setStatus('idle');
         // Iniciar escucha automática después de que termine de hablar
@@ -335,6 +356,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         }, 500); // Pequeña pausa para transición natural
       };
       utterance.onerror = (error) => {
+        clearInterval(interruptionInterval);
         console.error('❌ Error en síntesis de voz:', error);
         setStatus('idle');
       };
@@ -342,7 +364,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       speechSynthesis.speak(utterance);
     } catch (error) {
       console.error('❌ Error leyendo pregunta:', error);
-      setStatus('error');
+      setStatus('idle');
     }
   };
 
@@ -422,8 +444,43 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
           console.log('✅ Transcripción recibida:', transcription);
           // Agregar transcripción a la conversación
           addConversationTurn(true, transcription);
-          setStatus('idle');
-          setIsListening(false); // Cambiar estado aquí después de procesar
+          
+          // Generar respuesta automática del agente para mantener conversación fluida
+          try {
+            console.log('🤖 Generando respuesta del agente...');
+            const agentResponse = await geminiService.generateTextResponse(
+              `El usuario respondió: "${transcription}". Genera una respuesta natural y empática que confirme que entendiste su respuesta y continúe la conversación de forma fluida. Responde de forma concisa.`
+            );
+            
+            console.log('🤖 Respuesta del agente:', agentResponse);
+            addConversationTurn(false, agentResponse);
+            
+            // Leer la respuesta del agente automáticamente
+            const utterance = new SpeechSynthesisUtterance(agentResponse);
+            utterance.lang = 'es-CO';
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
+            utterance.volume = 0.8;
+            
+            utterance.onend = () => {
+              console.log('🤖 Agente terminó de responder, iniciando siguiente ciclo...');
+              setStatus('idle');
+              // Iniciar escucha automática para la siguiente interacción
+              setTimeout(() => {
+                if (geminiService?.connected) {
+                  startListening();
+                }
+              }, 500);
+            };
+            
+            setStatus('speaking');
+            speechSynthesis.speak(utterance);
+            
+          } catch (error) {
+            console.error('❌ Error generando respuesta del agente:', error);
+            setStatus('idle');
+            setIsListening(false);
+          }
           
         } catch (error) {
           console.error('❌ Error procesando audio:', error);
@@ -564,28 +621,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
           {getStatusText()}
         </StatusIndicator>
         
-        {/* Botones de control */}
-        {status === 'idle' && !isListening && conversation.length === 0 && (
-          <VoiceButton
-            isActive={false}
-            variant="secondary"
-            onClick={handleVoiceToggle}
-            title="Iniciar conversación manualmente"
-          >
-            🎙️ Hablar
-          </VoiceButton>
-        )}
-        
-        {isListening && (
-          <VoiceButton
-            isActive={true}
-            variant="secondary"
-            onClick={stopListening}
-            title="Detener grabación manualmente"
-          >
-            ⏹️ Detener
-          </VoiceButton>
-        )}
+        {/* Solo indicador de estado - sin botones manuales */}
       </VoiceControls>
 
       {/* Botones de acción */}
