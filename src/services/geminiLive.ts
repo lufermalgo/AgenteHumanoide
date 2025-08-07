@@ -105,9 +105,9 @@ export class GeminiLiveService {
     } catch (error) {
       console.error('❌ Error procesando audio:', error);
       console.error('❌ Detalles del error:', {
-        errorType: error.constructor.name,
-        message: error.message,
-        stack: error.stack
+        errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : 'No stack available'
       });
       throw error;
     }

@@ -408,6 +408,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
         if (arrayBuffer.byteLength === 0) {
           console.warn('⚠️ No se capturó audio');
           setStatus('idle');
+          setIsListening(false);
           return;
         }
         
@@ -422,10 +423,12 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
           // Agregar transcripción a la conversación
           addConversationTurn(true, transcription);
           setStatus('idle');
+          setIsListening(false); // Cambiar estado aquí después de procesar
           
         } catch (error) {
           console.error('❌ Error procesando audio:', error);
           setStatus('error');
+          setIsListening(false); // Cambiar estado en caso de error
         }
       };
       
@@ -464,11 +467,11 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
       try {
         mediaRecorderRef.current.stop();
         console.log('✅ MediaRecorder.stop() ejecutado');
+        // NO cambiar isListening aquí - dejarlo para que onstop procese
       } catch (error) {
         console.error('❌ Error deteniendo MediaRecorder:', error);
+        setIsListening(false); // Solo cambiar si hay error
       }
-      
-      setIsListening(false);
       
       // Limpiar timeout de silencio
       if (silenceTimeoutRef.current) {
