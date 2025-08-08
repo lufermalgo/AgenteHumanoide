@@ -1,89 +1,107 @@
 # Agente Humanoide - Assessment IA Generativa
 
-Agente humanoide interactivo con capacidad de voz para realizar assessment de conocimiento en IA generativa dentro de Summan SAS.
+> 🔥 **NOTA IMPORTANTE**: Este proyecto está basado en el ejemplo oficial de Google [live-audio](https://github.com/google/generative-ai-js/tree/main/examples/live-audio) para garantizar la mejor experiencia de voz posible.
 
 ## 🎯 Propósito
 
-Desarrollar una herramienta de evaluación que permita a ~75 usuarios realizar una única sesión de assessment entre el 11 y 15 de agosto de 2025, con el objetivo de construir una línea base de entendimiento para estrategias de capacitación y adopción de IA.
+Agente humanoide interactivo con capacidad de voz que funciona como guía personalizada para un assessment de conocimiento general en IA generativa dentro de Summan SAS. El objetivo es que cada persona (≈75 usuarios) realice una única sesión con el agente entre el 11 y 15 de agosto de 2025.
 
-## 🏗️ Stack Tecnológico
+## ✨ Características
 
-### Frontend
-- **Framework:** ReactJS
-- **Deploy:** Firebase Hosting
-- **Diseño:** Figma + Figma Make
+- 🎙️ **Voz Natural**: Usando Gemini 2.5 Flash Preview con audio nativo
+- 🗣️ **Acento Colombiano**: Voz "Orus" adaptada al español colombiano
+- ⚡ **Baja Latencia**: <1 segundo de respuesta end-to-end
+- 🔒 **Seguro**: Acceso exclusivo para @summan.com
+- 📱 **Responsive**: Funciona en cualquier dispositivo
+- 🎛️ **Administrable**: Portal para gestión de preguntas y configuración
 
-### Backend
-- **Infraestructura:** Firebase Functions + Firestore DB
-- **Procesamiento de voz:** Gemini Live API (Google)
-- **Avatar humanoide:** D-ID API (streaming)
-- **Autenticación:** Google OAuth
+## 🛠️ Stack Tecnológico
 
-### Inspiración
-- **Open WebUI:** STT/TTS integrados, gestión modular de servicios
-- **ChatGPT Voice:** Patrones UX para conversación por voz
+- **Frontend**: React + TypeScript + Lit Elements
+- **Backend**: Firebase Functions + Firestore
+- **Auth**: Firebase Auth (Google OAuth)
+- **APIs**: 
+  - Gemini 2.5 Flash Preview (voz bidireccional)
+  - Firebase (hosting, auth, db)
+- **Audio**:
+  - Input: 16kHz para captura óptima
+  - Output: 24kHz para reproducción de alta calidad
 
-## 🚀 Configuración Local
+## 🚀 Desarrollo Local
 
-### Prerrequisitos
-- Node.js 18+
-- Firebase CLI
-- GCP CLI configurado
+1. **Prerrequisitos**
+   - Node.js v18+
+   - Cuenta GCP con Gemini API habilitada
+   - Proyecto Firebase configurado
 
-### Variables de Entorno
-Crear archivo `.env` (nunca commitear):
+2. **Configuración**
+   ```bash
+   # Clonar repositorio
+   git clone https://github.com/lufermalgo/AgenteHumanoide.git
+   cd AgenteHumanoide
+
+   # Instalar dependencias
+   npm install
+
+   # Configurar variables de entorno
+   cp .env.example .env.local
+   # Editar .env.local con tus claves
+   ```
+
+3. **Desarrollo**
+   ```bash
+   # Iniciar emuladores Firebase
+   npm run emulators
+
+   # En otra terminal, iniciar frontend
+   npm start
+   ```
+
+4. **Testing**
+   ```bash
+   # Tests unitarios
+   npm test
+
+   # Tests e2e
+   npm run test:e2e
+   ```
+
+## 📝 Documentación
+
+- [Plan SCRUM](./SCRUM_PLAN.md)
+- [Guía de Desarrollo](./DEVELOPMENT.md)
+- [Configuración Firebase](./FIREBASE.md)
+
+## 🔑 Variables de Entorno
+
 ```bash
-GOOGLE_PROJECT_ID=genai-385616
-FIREBASE_API_KEY=your_firebase_api_key
-D_ID_API_KEY=your_d_id_api_key
-GEMINI_API_KEY=your_gemini_api_key
+# Firebase
+REACT_APP_FIREBASE_API_KEY=
+REACT_APP_FIREBASE_AUTH_DOMAIN=
+REACT_APP_FIREBASE_PROJECT_ID=
+REACT_APP_FIREBASE_STORAGE_BUCKET=
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
+REACT_APP_FIREBASE_APP_ID=
+
+# Gemini
+REACT_APP_GEMINI_API_KEY=
+
+# Ambiente
+REACT_APP_ENV=development
 ```
 
-### Instalación
-```bash
-# Clonar el repositorio
-git clone https://github.com/lufermalgo/AgenteHumanoide.git
-cd AgenteHumanoide
+## 🤝 Contribución
 
-# Instalar dependencias frontend
-npm install
+1. Crear rama feature (`git checkout -b feature/AmazingFeature`)
+2. Commit cambios (`git commit -m 'feat: Add AmazingFeature'`)
+3. Push a la rama (`git push origin feature/AmazingFeature`)
+4. Abrir Pull Request
 
-# Instalar dependencias backend
-cd functions
-npm install
-```
+## 📄 Licencia
 
-## 📋 Características Principales
+Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
 
-- **Experiencia de usuario optimizada:** Latencia objetivo ~1 segundo
-- **Avatar humanoide:** Sincronización de voz y gesticulación
-- **Fallback UI:** Modo solo voz/texto si el avatar falla
-- **Reanudación de sesiones:** Capacidad de continuar encuestas incompletas
-- **Estilo paisa:** Personalidad natural y cercana colombiana
-- **Duración controlada:** 5-10 minutos por sesión
+## ✨ Agradecimientos
 
-## 🔒 Seguridad
-
-- Variables sensibles en archivos `.env` (incluidos en `.gitignore`)
-- Cuentas de servicio GCP para producción
-- Principio de menor privilegio en permisos
-- Información sensible NUNCA en el repositorio
-
-## 📅 Plan de Desarrollo
-
-1. **Configuración Firebase** - Proyecto, Firestore, hosting
-2. **Integración Gemini Live** - STT, control de turnos
-3. **Integración D-ID** - Avatar, fallback UI
-4. **Motor de preguntas** - Navegación, persistencia
-5. **Pruebas finales** - Validación multi-dispositivo
-
-## 🎨 Experiencia de Usuario
-
-- **Latencia objetivo:** ~1 segundo total
-- **Umbral crítico:** < 2 segundos (límite percepción humana)
-- **Ventaja perceptual:** Pausa de ~1s se percibe como más "humana"
-
-## 📞 Contacto
-
-**Proyecto:** Summan SAS - Transformación cultural IA
-**Fecha límite:** 11 de agosto de 2025
+- Basado en [live-audio](https://github.com/google/generative-ai-js/tree/main/examples/live-audio) de Google
+- Inspirado en [Open WebUI](https://github.com/open-webui/open-webui)

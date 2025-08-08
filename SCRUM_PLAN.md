@@ -1,4 +1,7 @@
-# 📋 PLAN SCRUM - AGENTE HUMANOIDE
+# 📋 PLAN SCRUM - AGENTE HUMANOIDE (Restructuración Live Audio)
+
+> ⚠️ **NOTA IMPORTANTE**: El proyecto ha sido restructurado para basarse en el ejemplo oficial de Google `live-audio`, que proporciona la mejor integración con Gemini y manejo de audio nativo. Esta decisión se tomó para garantizar la mejor experiencia de usuario posible.
+
 **Fecha límite:** 11 de agosto de 2025  
 **Días restantes:** 3 días  
 **Objetivo:** Assessment de IA generativa con avatar humanoide para ~75 usuarios Summan SAS
@@ -7,158 +10,145 @@
 
 ## 🎯 SPRINT OVERVIEW
 
-### ✅ **COMPLETADO**
-- [x] Arquitectura del proyecto (frontend + backend)
+### ✅ **COMPLETADO ANTES DE RESTRUCTURACIÓN**
+- [x] Arquitectura inicial del proyecto
 - [x] Configuración de seguridad (.env, .gitignore)
 - [x] Sistema de colores institucionales Summan SAS
-- [x] Estructura de componentes React + TypeScript
 - [x] Configuración Firebase (hosting, functions, firestore)
-- [x] Prompt detallado para Figma Make
-- [x] Sistema de Autenticación Google OAuth (@summan.com)
-- [x] Integración Gemini API (STT + TTS)
-- [x] Experiencia de voz fluida sin botones
-- [x] Motor de Preguntas Estructurado
+
+### 🔄 **EN PROGRESO - RESTRUCTURACIÓN**
+- [ ] Integración base de live-audio
+- [ ] Adaptación para assessment
+- [ ] Portal de administración
+- [ ] Despliegue en Firebase
 
 ---
 
-## 📅 **DÍA 1 - INFRAESTRUCTURA CORE** ✅ **COMPLETADO**
-*Fecha: 8 de agosto*
-
-### 🔥 **PRIORIDAD ALTA**
-- [x] **Firebase Functions Setup**
-  - Implementar funciones de autenticación
-  - Configurar Firestore con reglas de seguridad
-  - Testing de conexión GCP
-
-- [x] **Sistema de Autenticación**
-  - Componente LoginPage
-  - AuthProvider con Context
-  - ProtectedRoute wrapper
-  - Integración Google OAuth (@summan.com)
-
-- [x] **Análisis Open WebUI**
-  - Extraer componentes STT/TTS
-  - Adaptar lógica de voice interaction
-  - Documentar patrones reutilizables
-
-### ⏰ **Estimación:** 8 horas  
-### 🎯 **Entregable:** Autenticación funcional + análisis de componentes de voz
-
----
-
-## 📅 **DÍA 2 - INTEGRACIÓN DE SERVICIOS** 🔄 **EN PROGRESO**
+## 📅 **DÍA 1 - INTEGRACIÓN LIVE-AUDIO** 
 *Fecha: 9 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
-- [x] **Sistema de Voz**
-  - Componente VoiceInput (STT)
-  - Integración Gemini Live API
-  - Control de estados de conversación
-  - Manejo de latencia (<1s objetivo)
+- [ ] **Setup Base Live-Audio**
+  - Integrar componentes core
+  - Configurar Gemini 2.5 Flash Preview
+  - Adaptar manejo de audio nativo
+  - Testing de latencia
 
-- [ ] **Avatar Humanoide**
-  - Integración D-ID API
-  - Sincronización voz + gesticulación
-  - Fallback UI (solo voz/texto)
-  - Estados visuales de conversación
+- [ ] **Sistema de Autenticación**
+  - Migrar Google OAuth (@summan.com)
+  - Integrar con Firebase Auth
+  - Proteger rutas
+  - Testing de sesiones
 
-- [x] **Motor de Preguntas**
-  - Componente QuestionFlow
-  - Navegación entre preguntas
-  - Validación de respuestas
-  - Persistencia en Firestore
+- [ ] **Motor de Assessment**
+  - Adaptar para preguntas estructuradas
+  - Integrar con Firestore
+  - Manejo de estado y progreso
+  - Testing de flujo completo
 
-### ⏰ **Estimación:** 10 horas  
-### 🎯 **Entregable:** Flujo completo de conversación voz-avatar
+### ⏰ **Estimación:** 8 horas  
+### 🎯 **Entregable:** Base funcional con audio nativo
 
 ---
 
-## 📅 **DÍA 3 - UI/UX Y DEPLOYMENT**
+## 📅 **DÍA 2 - PORTAL ADMIN Y UI** 
 *Fecha: 10 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
+- [ ] **Portal Administrativo**
+  - CRUD de preguntas
+  - Configuración de prompts
+  - Gestión de usuarios
+  - Dashboard de progreso
+
 - [ ] **Interfaz de Usuario**
-  - Layout responsivo (desktop/tablet/mobile)
-  - Implementar colores institucionales
-  - Estados de conversación visuales
-  - Microinteracciones y transiciones
+  - Adaptar UI de live-audio
+  - Implementar colores Summan
+  - Responsive design
+  - Microinteracciones
 
-- [ ] **Gestión de Sesiones**
-  - Persistencia de progreso
-  - Reanudación de encuestas incompletas
-  - Validación "una sola vez por usuario"
-  - Recolección de metadatos
+- [ ] **Optimización**
+  - Medición de latencia
+  - Ajuste de buffers de audio
+  - Optimización de streaming
+  - Testing en diferentes dispositivos
 
-- [ ] **Testing y Optimización**
-  - Pruebas de latencia end-to-end
-  - Validación multi-dispositivo
-  - Optimización de rendimiento
-  - Testing con usuario real
-
-- [ ] **Deployment**
-  - Build de producción
-  - Deploy Firebase Hosting + Functions
-  - Configuración variables de entorno prod
-  - Validación final
-
-### ⏰ **Estimación:** 10 horas  
-### 🎯 **Entregable:** Aplicación completa desplegada y lista para uso
+### ⏰ **Estimación:** 8 horas  
+### 🎯 **Entregable:** Sistema completo con admin
 
 ---
 
-## 🔧 **CONFIGURACIÓN TÉCNICA**
+## 📅 **DÍA 3 - DEPLOYMENT Y TESTING**
+*Fecha: 11 de agosto*
 
-### **Stack Confirmado**
-- **Frontend:** React 18 + TypeScript + Styled Components
-- **Backend:** Firebase Functions + Firestore
-- **APIs:** Gemini Live (STT) + D-ID (Avatar) + Google Auth
-- **Deploy:** Firebase Hosting + Functions
+### 🔥 **PRIORIDAD ALTA**
+- [ ] **Deployment Firebase**
+  - Build de producción
+  - Deploy de funciones
+  - Configuración de dominios
+  - Variables de entorno
+
+- [ ] **Testing Final**
+  - Pruebas end-to-end
+  - Validación multi-dispositivo
+  - Test con usuarios reales
+  - Documentación de uso
+
+### ⏰ **Estimación:** 8 horas  
+### 🎯 **Entregable:** Sistema en producción
+
+---
+
+## 🔧 **STACK TÉCNICO ACTUALIZADO**
+
+### **Core Components (from live-audio)**
+- Audio nativo bidireccional (16kHz input, 24kHz output)
+- Gemini 2.5 Flash Preview con streaming
+- Voz "Orus" en español colombiano
+- Manejo preciso de timing
+
+### **Infraestructura**
+- Frontend: React + TypeScript + Lit Elements
+- Backend: Firebase Functions + Firestore
+- Auth: Firebase Auth (dominio @summan.com)
+- Deploy: Firebase Hosting
 
 ### **Métricas de Éxito**
-- ✅ Latencia total <1 segundo (audio → respuesta → avatar)
-- ✅ Autenticación restringida a @summan.com
-- ✅ Responsive en móvil, tablet, desktop
-- ✅ Fallback funcional si avatar falla
-- ✅ Persistencia de sesiones incompletas
-
-### **Riesgos Identificados**
-- 🚨 **Latencia D-ID API:** Preparar fallback optimizado
-- 🚨 **Límites Gemini Live:** Validar tokens/duración
-- 🚨 **Testing con usuario real:** Reservar tiempo día 3
+- ✅ Latencia total <1 segundo
+- ✅ Audio nativo sin Web Speech API
+- ✅ Voz natural en español colombiano
+- ✅ Experiencia fluida sin botones
 
 ---
 
 ## 📊 **TRACKING DIARIO**
 
-### **Día 1 - Progreso**
-- [ ] Firebase Functions operativo
-- [ ] Autenticación Google funcional  
-- [ ] Componentes STT/TTS identificados
-- [ ] Testing básico completado
+### **Día 1 - Integración (9 ago)**
+- [ ] Live-audio base funcionando
+- [ ] Auth con Firebase integrada
+- [ ] Motor de assessment adaptado
 
-### **Día 2 - Progreso**  
-- [ ] Voz bidireccional funcional
-- [ ] Avatar D-ID sincronizado
-- [ ] Motor de preguntas operativo
-- [ ] Latencia <2s validada
+### **Día 2 - Admin (10 ago)**
+- [ ] Portal admin completo
+- [ ] UI adaptada y responsive
+- [ ] Optimizaciones implementadas
 
-### **Día 3 - Progreso**
-- [ ] UI responsive completada
-- [ ] Sesiones persistentes funcionando
-- [ ] Testing usuario real exitoso
-- [ ] Deploy producción validado
+### **Día 3 - Deploy (11 ago)**
+- [ ] Sistema en producción
+- [ ] Testing final completado
+- [ ] Documentación lista
 
 ---
 
 ## 🎯 **DEFINICIÓN DE "TERMINADO"**
 
 Para considerar cada funcionalidad completa debe:
-1. ✅ **Funcionar correctamente** en desarrollo
-2. ✅ **Pasar testing básico** (happy path + error cases)  
-3. ✅ **Cumplir métricas de latencia** cuando aplique
-4. ✅ **Ser responsive** en los 3 breakpoints
-5. ✅ **Estar documentado** en código (comments)
+1. ✅ **Mantener la fluidez** del ejemplo live-audio
+2. ✅ **Funcionar en producción** (no solo local)
+3. ✅ **Cumplir métricas de latencia** (<1s)
+4. ✅ **Ser administrable** vía portal
+5. ✅ **Estar documentado** para usuarios
 
 ---
 
-**NOTA:** Este plan es dinámico y se actualiza en tiempo real según el progreso y hallazgos durante el desarrollo.
+**NOTA:** Este plan refleja la restructuración basada en live-audio y se actualiza según el progreso.
