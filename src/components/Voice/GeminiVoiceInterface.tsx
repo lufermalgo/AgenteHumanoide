@@ -106,8 +106,7 @@ const GeminiVoiceInterface: React.FC<GeminiVoiceInterfaceProps> = ({
               addConversationTurn(false, question);
             }
           },
-          onMessage: (message) => {
-            const text = message.serverContent?.modelTurn?.parts[0]?.text;
+          onMessage: (text: string) => {
             if (text) {
               addConversationTurn(false, text);
               onResponse(text);

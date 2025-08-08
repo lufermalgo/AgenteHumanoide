@@ -23,7 +23,7 @@ export interface AudioProcessor {
 
 export class GeminiLiveService {
   private client: GoogleGenerativeAI;
-  private model: any;
+  private session: any;
   private inputContext: AudioContext;
   private outputContext: AudioContext;
   private nextStartTime = 0;
@@ -32,7 +32,6 @@ export class GeminiLiveService {
   private sourceNode: MediaStreamAudioSourceNode | null = null;
   private mediaStream: MediaStream | null = null;
   private isRecording = false;
-  private chatStream: GenerateContentStreamResult | null = null;
 
   private readonly defaultConfig: GeminiLiveConfig = {
     audio: {
@@ -57,15 +56,7 @@ export class GeminiLiveService {
     };
 
     // Inicializar modelo
-    this.model = this.client.getGenerativeModel({
-      model: 'gemini-1.5-pro',
-      generationConfig: {
-        temperature: 0.7,
-        topK: 40,
-        topP: 0.95,
-        maxOutputTokens: 1024,
-      }
-    });
+    this.model = 'gemini-2.5-flash-preview-native-audio-dialog';
 
     // Inicializar contextos de audio
     const AudioContextClass = window.AudioContext;
@@ -87,17 +78,71 @@ export class GeminiLiveService {
     try {
       console.log('🔄 Conectando con Gemini...');
       
-      // Iniciar chat
-      this.chatStream = await this.model.generateContentStream({
-        contents: [{
-          role: 'user',
-          parts: [{
-            text: `Eres un asistente amigable para un assessment de IA generativa. 
-            Debes ser empático, cercano y usar un español colombiano natural.
-            Tus respuestas deben ser concisas y enfocadas.
-            No des opiniones ni retroalimentación sobre las respuestas.`
-          }]
-        }]
+      // Iniciar sesión
+      this.session = await this.client.live.connect({
+        model: this.model,
+        callbacks: {
+          onopen: () => {
+            console.log('✅ Conexión establecida');
+            callbacks.onOpen?.();
+          },
+          onmessage: async (message: any) => {
+            const audio = message.serverContent?.modelTurn?.parts[0]?.inlineData;
+            
+            if (audio) {
+              this.nextStartTime = Math.max(
+                this.nextStartTime,
+                this.outputContext.currentTime,
+              );
+
+              const audioBuffer = await this.decodeAudioData(
+                this.decode(audio.data),
+                24000,
+                1,
+              );
+              const source = this.outputContext.createBufferSource();
+              source.buffer = audioBuffer;
+              source.connect(this.outputNode);
+              source.addEventListener('ended', () => {
+                this.audioSources.delete(source);
+              });
+
+              source.start(this.nextStartTime);
+              this.nextStartTime = this.nextStartTime + audioBuffer.duration;
+              this.audioSources.add(source);
+            }
+
+            const interrupted = message.serverContent?.interrupted;
+            if (interrupted) {
+              for (const source of this.audioSources.values()) {
+                source.stop();
+                this.audioSources.delete(source);
+              }
+              this.nextStartTime = 0;
+            }
+
+            callbacks.onMessage?.(message);
+          },
+          onerror: (error: any) => {
+            console.error('❌ Error:', error);
+            callbacks.onError?.(error);
+          },
+          onclose: (event: any) => {
+            console.log('👋 Sesión cerrada:', event?.reason);
+            callbacks.onClose?.(event?.reason || 'Unknown reason');
+          }
+        },
+        config: {
+          responseModalities: [Modality.AUDIO],
+          speechConfig: {
+            voiceConfig: {
+              prebuiltVoiceConfig: {
+                voiceName: this.defaultConfig.voice.voiceName
+              }
+            },
+            languageCode: this.defaultConfig.voice.languageCode
+          }
+        }
       });
 
       console.log('✅ Conexión establecida con Gemini');
@@ -116,7 +161,7 @@ export class GeminiLiveService {
   }
 
   async startRecording(): Promise<void> {
-    if (this.isRecording || !this.chatStream) {
+    if (this.isRecording || !this.session) {
       return;
     }
 
@@ -140,48 +185,16 @@ export class GeminiLiveService {
       );
 
       // Configurar procesamiento de audio
-      this.scriptProcessor.onaudioprocess = async (event) => {
+      this.scriptProcessor.onaudioprocess = (event) => {
         if (!this.isRecording) return;
 
         const inputBuffer = event.inputBuffer;
         const inputData = inputBuffer.getChannelData(0);
         
-        // Procesar audio con Web Speech API
-        const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-        recognition.lang = this.defaultConfig.voice.languageCode;
-        recognition.continuous = true;
-        recognition.interimResults = false;
-
-        recognition.onresult = async (event) => {
-          const transcript = event.results[event.results.length - 1][0].transcript;
-          console.log('🎙️ Transcripción:', transcript);
-
-          // Enviar a Gemini
-          const result = await this.model.generateContentStream({
-            contents: [{
-              role: 'user',
-              parts: [{ text: transcript }]
-            }]
-          });
-
-          // Procesar respuesta
-          let response = '';
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            response += chunkText;
-          }
-
-          // Sintetizar voz
-          const utterance = new SpeechSynthesisUtterance(response);
-          utterance.lang = this.defaultConfig.voice.languageCode;
-          utterance.rate = 0.85;
-          utterance.pitch = 1.0;
-          utterance.volume = 0.8;
-
-          speechSynthesis.speak(utterance);
-        };
-
-        recognition.start();
+        // Enviar audio a Gemini
+        this.session.sendRealtimeInput({
+          media: this.createAudioBlob(inputData)
+        });
       };
 
       // Conectar nodos
@@ -318,8 +331,10 @@ export class GeminiLiveService {
 
   disconnect(): void {
     this.stopRecording();
-    this.session?.close();
-    this.session = null;
-    console.log('👋 Desconectado de Gemini Live');
+    if (this.session) {
+      this.session.close();
+      this.session = null;
+    }
+    console.log('👋 Desconectado de Gemini');
   }
 }
