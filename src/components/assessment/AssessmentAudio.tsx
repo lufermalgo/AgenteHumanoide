@@ -27,8 +27,8 @@ const AssessmentAudio: React.FC<Props> = ({
   const [started, setStarted] = useState(false);
   const [status, setStatus] = useState<string>('');
   const [phase, setPhase] = useState<'idle' | 'speaking' | 'listening' | 'processing' | 'followup'>('idle');
-  const [elapsedMs, setElapsedMs] = useState<number>(0);
-  const stopRequestedRef = useRef<boolean>(false);
+  // const [elapsedMs, setElapsedMs] = useState<number>(0);
+  // const stopRequestedRef = useRef<boolean>(false);
   const rafIdRef = useRef<number | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -37,13 +37,13 @@ const AssessmentAudio: React.FC<Props> = ({
   const prefetchedReadyRef = useRef<boolean>(false);
   const lastTranscriptRef = useRef<string>('');
   const timerRef = useRef<number | null>(null);
-  const lastEndSpeakMsRef = useRef<number>(0);
+  // const lastEndSpeakMsRef = useRef<number>(0);
   
   // 🔧 CONTROL DE AUDIO - Evitar solapamientos
   const currentAudioRef = useRef<HTMLAudioElement | null>(null);
   const isSpeakingRef = useRef<boolean>(false);
-  const audioQueueRef = useRef<Array<() => Promise<void>>>([]);
-  const isProcessingAudioRef = useRef<boolean>(false);
+  // const audioQueueRef = useRef<Array<() => Promise<void>>>([]);
+  // const isProcessingAudioRef = useRef<boolean>(false);
 
   // Función para detener audio actual
   const stopCurrentAudio = useCallback(() => {

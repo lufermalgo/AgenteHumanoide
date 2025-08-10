@@ -12,7 +12,7 @@ import {
 } from 'firebase/auth';
 
 const isLocal = typeof window !== 'undefined' && location.hostname === 'localhost';
-const env: any = import.meta.env || {};
+const env: any = process.env || {};
 const firebaseConfig = {
   apiKey: env.VITE_FIREBASE_API_KEY || (isLocal ? 'demo-api-key' : ''),
   authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || env.REACT_APP_FIREBASE_AUTH_DOMAIN || (isLocal ? 'localhost' : ''),
@@ -31,7 +31,7 @@ if (!env.VITE_FIREBASE_API_KEY) {
 }
 // Usar emulador local si aplica
 const useAuthEmulatorFlag = (() => {
-  const env: any = import.meta.env || {};
+  const env: any = process.env || {};
   const value = env.VITE_USE_AUTH_EMULATOR ?? env.REACT_APP_USE_AUTH_EMULATOR;
   if (typeof value === 'string') return value.toLowerCase() === 'true';
   return false; // por defecto desactivado para permitir Google real en local

@@ -9,7 +9,7 @@ import {
 } from 'firebase/firestore';
 import { auth } from './firebase';
 
-const env: any = import.meta.env || {};
+const env: any = process.env || {};
 const db = getFirestore(getApp());
 
 const useEmu = (() => {

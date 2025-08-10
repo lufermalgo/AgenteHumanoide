@@ -39,12 +39,12 @@ const Question = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.primary,
 }));
 
-const StatusIndicator = styled(Typography)(({ theme }) => ({
-  fontSize: '1rem',
-  color: theme.palette.text.secondary,
-  marginTop: theme.spacing(2),
-  fontStyle: 'italic',
-}));
+// const StatusIndicator = styled(Typography)(({ theme }) => ({
+//   fontSize: '1rem',
+//   color: theme.palette.text.secondary,
+//   marginTop: theme.spacing(2),
+//   fontStyle: 'italic',
+// }));
 
 const StartButton = styled(Button)(({ theme }) => ({
   backgroundColor: '#9bc41c',
@@ -90,7 +90,7 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
   const [currentPhase, setCurrentPhase] = useState<'idle' | 'speaking' | 'listening' | 'processing' | 'followup'>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
   const [isStarted, setIsStarted] = useState<boolean>(false);
-  const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  // const [isInitialized, setIsInitialized] = useState<boolean>(false);
   
   const currentQuestion = questions[qIndex]?.text || 'Cargando pregunta…';
   const effectiveName = preferredName || nameAnalysis?.preferred || 'Hola';
@@ -120,7 +120,7 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
           localStorage.setItem('assessmentia-needsNamePreference', 'true');
         }
         
-        setIsInitialized(true);
+        // setIsInitialized(true);
       } catch (error) {
         console.error('Error initializing assessment:', error);
       }
