@@ -37,8 +37,7 @@
   - Logo de Summan SAS
   - Descripción del ejercicio y su propósito
   - Sección de login con Google (cuentas corporativas)
-  - Explicación de que es una encuesta de conocimiento en IA
-- **Propósito:** Autenticación y primera introducción al ejercicio
+- **Propósito:** Autenticación
 
 #### **0.2 Proceso de Autenticación**
 - **Acción:** Usuario hace clic en "Iniciar sesión con Google"
@@ -58,7 +57,7 @@
 - **Propósito:** Cumplir políticas de AudioContext del navegador
 
 #### **1.2 Activación con Gesto de Usuario**
-- **Acción:** Usuario hace clic en "Iniciar Evaluación"
+- **Acción:** Usuario hace clic en "Iniciar Encuesta"
 - **Resultado:** 
   - AudioContext se activa (cumple políticas de seguridad)
   - Estado cambia a `isStarted = true`
@@ -70,7 +69,7 @@
 - **Agente dice:** "¡Hola [Nombre]! Soy Anita-AI..."
 - **Contexto:** Usa `displayName` de Google Auth
 - **Generación:** Prompt dinámico basado en Context Engineering
-- **Tono:** Conversacional entre colegas, no formal ("señor")
+- **Tono:** Conversacional entre colegas, no formal ("señor", "señora")
 
 #### **2.2 Análisis de Nombre**
 - **Proceso:** `extract_preferred_first_name(displayName)`
@@ -87,16 +86,30 @@
 - **Procesamiento:** `extractPreferredName()` detecta preferencia
 - **Confirmación:** "Perfecto, te llamaré [Nombre Preferido]"
 
+#### **2.4 Captura de Cargo y Funciones**
+- **Agente pregunta:** "Me gustaría conocer un poco sobre tu rol en Summan. ¿Podrías contarme brevemente cuál es tu cargo y qué funciones realizas en tu día a día?"
+- **Propósito:** Entender responsabilidades para análisis posterior
+- **Duración:** Respuesta libre (máximo 1 minuto)
+- **Almacenamiento:** Para análisis de correlación cargo-IA
+- **Tono:** Conversacional, no evaluativo
+
 ### **FASE 3: INTRODUCCIÓN AL ASSESSMENT**
 
 #### **3.1 Contexto del Ejercicio**
-- **Agente explica:** Propósito del assessment
+- **Agente explica:** Propósito de la encuesta
 - **Tono:** Empático, no evaluativo, conversacional
 - **Duración:** Breve pero completa
 - **Enfoque:** En la honestidad y naturalidad
 - **Mensaje clave:** "No es necesario que investigues en Internet, queremos entender lo que sabes ahora"
 
-#### **3.2 Transición a Preguntas**
+#### **3.2 Manejo de Preguntas Curiosas**
+- **Situación:** Usuario hace preguntas sobre el propósito, evaluación, impacto en trabajo
+- **Ejemplos:** "¿Para qué es esta encuesta?", "¿Me van a evaluar?", "¿Esto afectará mi trabajo?"
+- **Respuesta del agente:** "No te preocupes, todo lo que estás haciendo en este momento nos va a ayudar mucho a crecer como compañía. Esto es solamente para mejorar, no estamos juzgando, no estamos evaluando, no estamos utilizando esta información para otros fines. Es todo para ver cómo logramos o qué necesitamos hacer para que Summan sea una compañía más enfocada en la inteligencia artificial generativa."
+- **Tono:** Empático, tranquilizador, generativo
+- **Propósito:** Crear zona de confianza y redirigir al foco
+
+#### **3.3 Transición a Preguntas**
 - **Agente dice:** "Perfecto, comencemos con las preguntas..."
 - **Estado:** Cambia a modo de preguntas
 
@@ -162,7 +175,7 @@
 
 #### **5.1 Detección de Sesión Incompleta**
 - **Condición:** Usuario regresa y tiene sesión parcial
-- **Agente dice:** "¡Gracias por regresar! Me gusta mucho que hayas vuelto. Te parece si continuamos donde quedamos. En la última pregunta diste muy buena información al respecto. ¿Te parece bien si continuamos con la siguiente pregunta?"
+- **Agente dice:** "¡Gracias por regresar! Me gusta mucho que hayas vuelto. En la última pregunta diste muy buena información al respecto. ¿Te parece bien si continuamos con la siguiente pregunta?"
 - **Estado:** Continúa desde `qIndex` guardado
 
 #### **5.2 Control de Estado de Usuario**
@@ -220,6 +233,15 @@
 - **Fallback:** Si no carga avatar, solo voz/texto
 - **Integración:** Con plataforma de avatar
 
+### **DISEÑO VISUAL CON FIGMA:**
+- **Plataforma Figma:** Para diseño completo de la interfaz
+- **Look and Feel:** Aplicación de colores institucionales (#9bc41c, #f08a00, #666666)
+- **Diseño responsivo:** Adaptación a diferentes dispositivos
+- **Componentes visuales:** Botones, tarjetas, indicadores de estado
+- **Animaciones:** Transiciones suaves y profesionales
+- **Tipografía:** Jerarquía visual clara y legible
+- **Espaciado:** Layout equilibrado y profesional
+
 ---
 
 ## 🧠 **SISTEMA DE CONTEXT ENGINEERING**
@@ -248,6 +270,7 @@
 - **Parametrización de preguntas:** Gestión de preguntas de la encuesta
 - **Customización:** Ajustes sin código
 - **Monitoreo:** Métricas de rendimiento y uso
+- **Manejo de preguntas curiosas:** Configuración de respuestas tranquilizadoras
 
 ---
 
@@ -287,6 +310,7 @@
 - **Usuario:** Nombre de Google Auth
 - **Preferencia:** Nombre preferido
 - **Cargo/Rol:** Respuesta libre inicial
+- **Funciones:** Descripción de responsabilidades diarias
 - **Estado:** No iniciada, parcial, completada
 
 ### **POR PREGUNTA:**
@@ -301,6 +325,8 @@
 - **Alimentación:** Otra IA para análisis de respuestas
 - **Conclusiones:** Extracción de insights específicos
 - **Presentación:** Análisis en vivo con las respuestas
+- **Correlación cargo-IA:** Análisis de cómo diferentes roles pueden aprovechar la IA
+- **Recomendaciones:** Basadas en responsabilidades y nivel de conocimiento
 
 ---
 
@@ -425,8 +451,9 @@
 3. Optimización de latencia
 4. Panel administrativo
 5. Integración con avatar (D-ID)
-6. Preparación para deploy
-7. Documentación final
+6. Diseño visual con Figma
+7. Preparación para deploy
+8. Documentación final
 
 ---
 
