@@ -1,6 +1,112 @@
+current day: Aug 7 2025
+
+# Context Engineering para el Agente Humanoide de Encuesta por Voz (Summan SAS)
+
+## Propósito del Proyecto
+
+Desarrollar un agente humanoide interactivo con capacidad de voz, que funcione como guía personalizada para una encuesta de conocimiento general en IA generativa dentro de la organización Summan SAS. El objetivo es que cada persona (≈75 usuarios) realice una única sesión con el agente entre el 11 y 15 de agosto de 2025. Las respuestas recolectadas permitirán construir una línea base de entendimiento para estrategias de capacitación y adopción.
+
+Este agente debe ser amigable, empático, y guiar la conversación sin dar opiniones o retroalimentación. Debe invitar a la honestidad y naturalidad del usuario, y mantener el foco de la encuesta sin desviarse por preguntas irrelevantes.
+
+El propósito final es impulsar una transformación cultural basada en IA, con enfoque humano, donde cada usuario se sienta escuchado y valorado, y donde el agente actúe como un puente entre tecnología y empatía.
+
 ---
-alwaysApply: true
+
+## Estructura del Proyecto y Organización de Archivos
+
+### Estructura de Directorios Obligatoria (ESTRUCTURA PROFESIONAL)
+
+```
+/
+├── frontend/          # 🎨 Aplicación React/TypeScript
+│   ├── src/          # Código fuente del frontend
+│   │   ├── components/     # Componentes React organizados por dominio
+│   │   │   ├── assessment/ # Componentes específicos de la encuesta
+│   │   │   ├── auth/      # Componentes de autenticación
+│   │   │   ├── admin/     # Componentes del panel administrativo
+│   │   │   └── UI/        # Componentes de interfaz reutilizables
+│   │   ├── services/      # Lógica de negocio del frontend
+│   │   │   ├── context-engineering.ts    # Sistema de prompts dinámicos
+│   │   │   ├── prompt-engine.ts          # Motor de generación de prompts
+│   │   │   ├── db.ts                     # Operaciones de base de datos
+│   │   │   ├── firebase.ts               # Configuración de Firebase
+│   │   │   └── questions.ts              # Gestión de preguntas
+│   │   ├── config/        # Configuraciones del frontend
+│   │   │   └── context-engineering-config.ts
+│   │   ├── data/          # Datos estáticos (JSON, etc.)
+│   │   │   └── questions.json  # Preguntas de la encuesta
+│   │   ├── utils/         # Utilidades del frontend
+│   │   └── test/          # Tests del frontend
+│   ├── public/        # Archivos públicos
+│   ├── package.json   # Dependencias del frontend
+│   └── dist/          # Build de producción
+├── backend/           # 🔥 Firebase Functions (Backend)
+│   ├── src/           # Código fuente del backend
+│   │   └── index.ts   # Endpoints principales (tts, stt, generate)
+│   ├── package.json   # Dependencias del backend
+│   └── lib/           # Build del backend
+├── shared/            # 🔄 Código compartido entre frontend/backend
+├── config/            # ⚙️ Configuración del proyecto
+│   ├── firebase.json  # Configuración de Firebase
+│   ├── firestore.rules
+│   ├── storage.rules
+│   └── env.example    # Template de variables de entorno
+├── docs/              # 📚 Documentación del proyecto
+└── package.json       # 🎛️ Scripts principales del proyecto
+```
+
+### Ubicación de Archivos de Configuración
+
+#### **Preguntas de la Encuesta:**
+- **Ubicación:** `frontend/src/data/questions.json`
+- **Formato:** JSON con estructura completa (id, text, timeLimit, required)
+- **Acceso:** Via `frontend/src/services/questions.ts`
+- **Customización:** Panel administrativo (futuro)
+
+#### **Context Engineering:**
+- **Configuración:** `frontend/src/config/context-engineering-config.ts`
+- **Lógica:** `frontend/src/services/context-engineering.ts`
+- **Prompts:** `frontend/src/services/prompt-engine.ts`
+- **Customización:** Panel administrativo (futuro)
+
+#### **Variables de Entorno:**
+- **Desarrollo:** `.env` (NO subir al repo)
+- **Producción:** Variables de entorno de Firebase Functions
+- **Referencias:** `process.env` en el código
+
+### Reglas de Organización de Código
+
+1. **NO archivos legacy:** Eliminar inmediatamente cualquier archivo LitElement, Vanilla JS, o tecnologías no utilizadas
+2. **NO duplicaciones:** Un solo archivo por funcionalidad
+3. **NO archivos sueltos:** Todo debe estar en su directorio correspondiente
+4. **Consistencia tecnológica:** Solo React/TypeScript en el frontend
+5. **Separación de responsabilidades:** Lógica de negocio en services/, UI en components/
+6. **Separación frontend/backend:** Frontend en `/frontend/`, backend en `/backend/`
+7. **Configuración centralizada:** Todo en `/config/`
+8. **Scripts centralizados:** Usar package.json principal para comandos
+
+### Scripts de Desarrollo Obligatorios
+
+```bash
+# Desarrollo
+npm run dev:frontend    # Solo frontend
+npm run dev:backend     # Solo backend
+npm run dev:all         # Frontend + backend
+
+# Build y Deploy
+npm run build           # Build completo
+npm run deploy          # Deploy completo
+npm run deploy:frontend # Solo frontend
+npm run deploy:backend  # Solo backend
+
+# Testing
+npm run test            # Tests completos
+npm run test:frontend   # Tests frontend
+npm run test:backend    # Tests backend
+```
+
 ---
+
 ## Reglas y Directivas Generales
 
 1. **El agente nunca responde preguntas fuera del propósito de la encuesta.** Redirige con amabilidad.
@@ -100,7 +206,7 @@ alwaysApply: true
 
 **Antes de cada commit:**
 - [ ] `npm run build` pasa sin errores
-- [ ] `npm run dev` funciona correctamente
+- [ ] `npm run dev:frontend` funciona correctamente
 - [ ] No hay console.log/console.error en producción
 - [ ] Imports organizados y sin duplicados
 - [ ] Variables no utilizadas comentadas o eliminadas
@@ -122,8 +228,8 @@ alwaysApply: true
 1. **`SCRUM_PLAN.md`** - Plan de trabajo diario y progreso
 2. **`docs/vision-del-proyecto.md`** - Visión completa del proyecto
 3. **`README.md`** - Documentación técnica y setup
-4. **`.env.example`** - Template de variables de entorno
-5. **`firebase.json`** - Configuración de Firebase
+4. **`config/env.example`** - Template de variables de entorno
+5. **`config/firebase.json`** - Configuración de Firebase
 
 ### Control de Progreso
 
@@ -235,6 +341,9 @@ alwaysApply: true
 * [ ] **Análisis de Datos** - IA para análisis de respuestas
 * [ ] **Métricas Avanzadas** - Dashboard de monitoreo
 * [ ] **Optimizaciones** - Performance y escalabilidad
+
+---
+* [ ] Definir tono exacto de bienvenida del agente y cierre de sesión.
 
 ---
 * [ ] Definir tono exacto de bienvenida del agente y cierre de sesión.
