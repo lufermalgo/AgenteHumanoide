@@ -1,28 +1,49 @@
 {
   "name": "agente-humanoide",
   "version": "1.0.0",
+  "description": "Agente Humanoide de Encuesta por Voz para Summan SAS",
   "private": true,
-  "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.15.11",
-    "firebase": "^11.10.0",
-    "lit": "^3.1.2",
-    "lit-element": "^4.0.4",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run serve",
+    "dev:all": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "install:all": "npm install && cd frontend && npm install && cd ../backend && npm install",
+    "clean": "rm -rf frontend/node_modules backend/node_modules frontend/dist backend/lib",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "cd frontend && npm test",
+    "test:backend": "cd backend && npm test",
+    "deploy": "npm run build && firebase deploy",
+    "deploy:frontend": "npm run build:frontend && firebase deploy --only hosting",
+    "deploy:backend": "npm run build:backend && firebase deploy --only functions",
+    "emulators": "firebase emulators:start --project demo-assessmentia",
+    "emulators:all": "firebase emulators:start --only functions,firestore,auth,hosting --project demo-assessmentia"
   },
   "devDependencies": {
-    "@types/react": "^18.2.61",
-    "@types/react-dom": "^18.2.19",
-    "@vitejs/plugin-react": "^4.2.1",
-    "dotenv": "^16.4.5",
-    "typescript": "^5.3.3",
-    "vite": "^5.1.4"
+    "concurrently": "^8.2.2"
   },
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview"
-  }
-}
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lufermalgo/AgenteHumanoide.git"
+  },
+  "keywords": [
+    "ai",
+    "voice",
+    "assessment",
+    "firebase",
+    "react",
+    "typescript"
+  ],
+  "author": "Summan SAS",
+  "license": "MIT"
+} 
