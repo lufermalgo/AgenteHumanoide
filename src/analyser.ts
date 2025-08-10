@@ -9,8 +9,10 @@ export class Analyser {
   private analyser: AnalyserNode;
   private bufferLength = 0;
   private dataArray: Uint8Array;
+  public readonly node: AudioNode;
 
   constructor(node: AudioNode) {
+    this.node = node;
     this.analyser = node.context.createAnalyser();
     this.analyser.fftSize = 32;
     this.bufferLength = this.analyser.frequencyBinCount;

@@ -10,35 +10,39 @@ import {Analyser} from './analyser';
 
 @customElement('gdm-live-audio-visuals')
 export class GdmLiveAudioVisuals extends LitElement {
-  private inputAnalyser: Analyser;
-  private outputAnalyser: Analyser;
+  private inputAnalyser?: Analyser;
+  private outputAnalyser?: Analyser;
 
-  private _outputNode: AudioNode;
+  private _outputNode?: AudioNode;
 
   @property()
-  set outputNode(node: AudioNode) {
+  set outputNode(node: AudioNode | undefined) {
     this._outputNode = node;
-    this.outputAnalyser = new Analyser(this._outputNode);
+    if (node) {
+      this.outputAnalyser = new Analyser(node);
+    }
   }
 
   get outputNode() {
     return this._outputNode;
   }
 
-  private _inputNode: AudioNode;
+  private _inputNode?: AudioNode;
 
   @property()
-  set inputNode(node: AudioNode) {
+  set inputNode(node: AudioNode | undefined) {
     this._inputNode = node;
-    this.inputAnalyser = new Analyser(this._inputNode);
+    if (node) {
+      this.inputAnalyser = new Analyser(node);
+    }
   }
 
   get inputNode() {
     return this._inputNode;
   }
 
-  private canvas: HTMLCanvasElement;
-  private canvasCtx: CanvasRenderingContext2D;
+  private canvas!: HTMLCanvasElement;
+  private canvasCtx!: CanvasRenderingContext2D;
 
   static styles = css`
     canvas {
@@ -73,12 +77,14 @@ export class GdmLiveAudioVisuals extends LitElement {
       inputGradient.addColorStop(0, '#FB5F5F');
       canvasCtx.fillStyle = inputGradient;
 
-      this.inputAnalyser.update();
+      if (this.inputAnalyser) {
+        this.inputAnalyser.update();
 
-      for (let i = 0; i < this.inputAnalyser.data.length; i++) {
-        const barHeight = this.inputAnalyser.data[i] * (HEIGHT / 255);
-        canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
-        x += barWidth;
+        for (let i = 0; i < this.inputAnalyser.data.length; i++) {
+          const barHeight = this.inputAnalyser.data[i] * (HEIGHT / 255);
+          canvasCtx.fillRect(x, HEIGHT - barHeight, barWidth, barHeight);
+          x += barWidth;
+        }
       }
 
       canvasCtx.globalCompositeOperation = 'lighter';
@@ -101,14 +107,18 @@ export class GdmLiveAudioVisuals extends LitElement {
     requestAnimationFrame(() => this.visualize());
   }
 
-  private firstUpdated() {
-    this.canvas = this.shadowRoot!.querySelector('canvas');
+  protected firstUpdated() {
+    const canvas = this.shadowRoot!.querySelector('canvas');
+    if (!canvas) throw new Error('Canvas not found');
+    this.canvas = canvas;
     this.canvas.width = 400;
     this.canvas.height = 400;
-    this.canvasCtx = this.canvas.getContext('2d');
+    const ctx = this.canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not get 2D context');
+    this.canvasCtx = ctx;
   }
 
-  private render() {
+  protected render() {
     return html`<canvas></canvas>`;
   }
 }
