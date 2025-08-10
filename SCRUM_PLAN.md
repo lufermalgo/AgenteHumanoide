@@ -4,7 +4,7 @@
 
 **Fecha límite:** 11 de agosto de 2025  
 **Días restantes:** 3 días  
-**Objetivo:** Assessment de IA generativa con avatar humanoide para ~75 usuarios Summan SAS
+**Objetivo:** Encuesta de IA generativa con avatar humanoide para ~75 usuarios Summan SAS
 
 ---
 
@@ -35,45 +35,75 @@
   - Autenticación Google (@summan.com)
   - Proxy Vite configurado
 
-### 🔄 **EN PROGRESO - OPTIMIZACIÓN**
-- [ ] **Testing y Refinamiento**
-  - Pruebas de latencia end-to-end
-  - Validación de respuestas generativas
-  - Optimización de prompts
-  - Testing con usuarios reales
+- [x] **Control de Audio**
+  - Sistema centralizado sin solapamientos
+  - Pausas naturales entre interacciones
+  - Limpieza automática de recursos
+  - Botón de inicio para AudioContext
+
+- [x] **Indicadores Visuales**
+  - Estados: hablando, escuchando, procesando
+  - Animaciones: pulse, wave, spin
+  - Colores institucionales
+  - Feedback visual profesional
+
+### 🔄 **EN PROGRESO - FUNCIONALIDADES CRÍTICAS**
+- [ ] **Captura de Cargo y Funciones**
+  - Pregunta sobre rol en Summan
+  - Descripción de responsabilidades diarias
+  - Almacenamiento para análisis posterior
+  - Correlación cargo-IA
+
+- [ ] **Manejo de Preguntas Curiosas**
+  - Respuestas tranquilizadoras y empáticas
+  - Redirección al foco de la encuesta
+  - Creación de zona de confianza
+  - Configuración en panel administrativo
+
+- [ ] **Sistema de Reanudación**
+  - Detección de sesiones incompletas
+  - Mensaje de bienvenida al regresar
+  - Control de estado: no iniciada, parcial, completada
+  - Continuación desde última pregunta
 
 - [ ] **Portal de Administración**
   - CRUD de preguntas
   - Configuración de contexto
   - Dashboard de progreso
-  - Gestión de usuarios
+  - Gestión de usuarios y reset
 
 ---
 
-## 📅 **DÍA 1 - TESTING Y REFINAMIENTO** 
+## 📅 **DÍA 1 - FUNCIONALIDADES CRÍTICAS** 
 *Fecha: 9 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
+- [ ] **Captura de Cargo y Funciones**
+  - Implementar pregunta sobre rol en Summan
+  - Capturar descripción de responsabilidades
+  - Almacenar en Firestore para análisis
+  - Integrar con flujo de personalización
+
+- [ ] **Manejo de Preguntas Curiosas**
+  - Implementar detección de preguntas off-topic
+  - Respuestas tranquilizadoras generativas
+  - Redirección empática al foco
+  - Configuración en Context Engineering
+
+- [ ] **Sistema de Reanudación**
+  - Detectar sesiones incompletas
+  - Mensaje de bienvenida personalizado
+  - Continuar desde última pregunta
+  - Control de estados de usuario
+
 - [ ] **Testing del Sistema Generativo**
   - Validar respuestas en todas las situaciones
   - Medir latencia real end-to-end
   - Probar con diferentes nombres
   - Verificar empatía y naturalidad
 
-- [ ] **Optimización de Prompts**
-  - Refinar prompts para mayor empatía
-  - Ajustar temperatura y parámetros
-  - Probar variaciones de personalidad
-  - Optimizar para latencia
-
-- [ ] **Testing de Usuario**
-  - Pruebas con usuarios reales
-  - Validación de experiencia
-  - Ajustes basados en feedback
-  - Documentación de uso
-
 ### ⏰ **Estimación:** 8 horas  
-### 🎯 **Entregable:** Sistema generativo validado y optimizado
+### 🎯 **Entregable:** Funcionalidades críticas implementadas y validadas
 
 ---
 
@@ -81,26 +111,30 @@
 *Fecha: 10 de agosto*
 
 ### 🔥 **PRIORIDAD ALTA**
-- [ ] **Portal Administrativo**
-  - CRUD de preguntas del assessment
-  - Configuración de contexto del agente
+- [ ] **Portal Administrativo Completo**
+  - CRUD de preguntas de la encuesta
+  - Configuración de prompts del Context Engineering
   - Gestión de usuarios y sesiones
   - Dashboard de progreso y métricas
+  - Reset para equipo de pruebas
+  - Configuración de respuestas para preguntas curiosas
 
-- [ ] **Interfaz de Usuario**
+- [ ] **Interfaz de Usuario Mejorada**
   - UI moderna y responsive
-  - Colores institucionales Summan
-  - Indicadores de estado (hablando, escuchando)
+  - Colores institucionales Summan (#9bc41c, #f08a00, #666666)
+  - Indicadores de estado mejorados
   - Microinteracciones fluidas
+  - Preparación para integración con Figma
 
 - [ ] **Configuración Dinámica**
   - Carga de preguntas desde JSON
   - Configuración de personalidad
   - Ajustes de VAD y timing
   - Variables de entorno
+  - Configuración de manejo de preguntas curiosas
 
 ### ⏰ **Estimación:** 8 horas  
-### 🎯 **Entregable:** Sistema completo con admin
+### 🎯 **Entregable:** Sistema completo con admin y UI mejorada
 
 ---
 
@@ -113,15 +147,23 @@
   - Deploy de funciones con contexto
   - Configuración de dominios
   - Variables de entorno seguras
+  - Optimización para 75+ usuarios concurrentes
 
-- [ ] **Testing Final**
+- [ ] **Testing Final Completo**
   - Pruebas end-to-end completas
   - Validación multi-dispositivo
   - Test con usuarios reales
+  - Validación de concurrencia
   - Documentación completa
 
+- [ ] **Preparación para Integraciones Futuras**
+  - Estructura para D-ID (avatar)
+  - Preparación para Figma (diseño visual)
+  - Documentación de APIs
+  - Guías de configuración
+
 ### ⏰ **Estimación:** 8 horas  
-### 🎯 **Entregable:** Sistema en producción
+### 🎯 **Entregable:** Sistema en producción listo para uso
 
 ---
 
@@ -139,23 +181,31 @@
 - **Audio:** Gemini TTS (Kore) + STT
 - **Auth:** Firebase Auth (dominio @summan.com)
 
+### **Funcionalidades Críticas**
+- **Captura de Cargo:** Análisis de roles y responsabilidades
+- **Manejo Curiosidad:** Respuestas tranquilizadoras
+- **Reanudación:** Sesiones incompletas
+- **Admin Panel:** Gestión completa del sistema
+
 ### **Métricas de Éxito**
 - ✅ **Latencia total <2 segundos**
 - ✅ **Respuestas generativas únicas**
 - ✅ **Empatía y naturalidad**
 - ✅ **Personalización por usuario**
+- ✅ **Capturar datos completos**
+- ✅ **Manejo de preguntas curiosas**
 
 ---
 
 ## 📊 **TRACKING DIARIO**
 
-### **Día 1 - Testing (9 ago)**
-- [x] Sistema generativo funcionando
-- [ ] Testing de latencia completado
-- [ ] Optimización de prompts
-- [ ] Validación con usuarios
+### **Día 1 - Funcionalidades Críticas (9 ago)**
+- [ ] Captura de cargo y funciones
+- [ ] Manejo de preguntas curiosas
+- [ ] Sistema de reanudación
+- [ ] Testing del sistema generativo
 
-### **Día 2 - Admin (10 ago)**
+### **Día 2 - Admin y UI (10 ago)**
 - [ ] Portal admin completo
 - [ ] UI moderna implementada
 - [ ] Configuración dinámica
@@ -165,7 +215,7 @@
 - [ ] Sistema en producción
 - [ ] Testing final completado
 - [ ] Documentación lista
-- [ ] Entrenamiento usuarios
+- [ ] Preparación para integraciones
 
 ---
 
@@ -177,6 +227,9 @@ Para considerar cada funcionalidad completa debe:
 3. ✅ **Ser personalizable** por usuario
 4. ✅ **Ser administrable** vía portal
 5. ✅ **Estar documentado** para usuarios
+6. ✅ **Capturar datos completos** (cargo, funciones)
+7. ✅ **Manejar preguntas curiosas** apropiadamente
+8. ✅ **Soportar reanudación** de sesiones
 
 ---
 
@@ -188,12 +241,61 @@ Para considerar cada funcionalidad completa debe:
 - **Empatía Natural**: Tono cálido y personalizado
 - **Personalización**: Uso correcto de nombres preferidos
 
-### **✅ Testing Validado**
-- **5 Situaciones Testeadas**: greeting, name_preference, name_confirmation, add_more, question_intro
-- **Respuestas Naturales**: Tono paisa, empático, variado
-- **Latencia Optimizada**: <2 segundos end-to-end
-- **Fallbacks Inteligentes**: Respuestas de respaldo variadas
+### **✅ Control de Audio Optimizado**
+- **Sin Solapamientos**: Sistema centralizado
+- **Pausas Naturales**: Entre interacciones
+- **Limpieza Automática**: Recursos liberados
+- **AudioContext**: Botón de inicio implementado
+
+### **✅ Indicadores Visuales**
+- **Estados Claros**: hablando, escuchando, procesando
+- **Animaciones**: pulse, wave, spin
+- **Colores Institucionales**: #9bc41c, #f08a00, #666666
+- **Feedback Profesional**: Experiencia fluida
 
 ---
 
-**NOTA:** El sistema ahora es completamente generativo, no usa scripts fijos. Cada interacción es única y empática.
+## 📋 **FUNCIONALIDADES PENDIENTES CRÍTICAS**
+
+### **🔥 PRIORIDAD 1 (Día 1)**
+- [ ] **Captura de Cargo y Funciones**
+  - Pregunta sobre rol en Summan
+  - Descripción de responsabilidades
+  - Almacenamiento para análisis
+  - Correlación cargo-IA
+
+- [ ] **Manejo de Preguntas Curiosas**
+  - Detección de preguntas off-topic
+  - Respuestas tranquilizadoras
+  - Redirección al foco
+  - Configuración admin
+
+- [ ] **Sistema de Reanudación**
+  - Detección de sesiones incompletas
+  - Mensaje de bienvenida
+  - Continuación desde última pregunta
+  - Control de estados
+
+### **🎯 PRIORIDAD 2 (Día 2)**
+- [ ] **Portal Administrativo**
+  - CRUD de preguntas
+  - Configuración de contexto
+  - Dashboard de métricas
+  - Reset para pruebas
+
+- [ ] **UI Mejorada**
+  - Diseño moderno
+  - Colores institucionales
+  - Indicadores mejorados
+  - Preparación Figma
+
+### **🚀 PRIORIDAD 3 (Día 3)**
+- [ ] **Deployment**
+  - Producción optimizada
+  - Testing final
+  - Documentación
+  - Preparación integraciones
+
+---
+
+**NOTA:** El sistema ahora es completamente generativo, no usa scripts fijos. Cada interacción es única y empática. Las funcionalidades críticas pendientes están claramente identificadas y priorizadas.
