@@ -1,107 +1,385 @@
-# Agente Humanoide - Assessment IA Generativa
+# 🤖 Agente Humanoide - Assessment IA Generativa
 
-> 🔥 **NOTA IMPORTANTE**: Este proyecto está basado en el ejemplo oficial de Google [live-audio](https://github.com/google/generative-ai-js/tree/main/examples/live-audio) para garantizar la mejor experiencia de voz posible.
+## 📋 Descripción del Proyecto
 
-## 🎯 Propósito
+Sistema interactivo de voz para realizar assessments de conocimiento en Inteligencia Artificial Generativa para **Summan SAS**. El agente humanoide "Anita-AI" conduce conversaciones naturales y empáticas con ~75 usuarios entre el 11-15 de agosto de 2025.
 
-Agente humanoide interactivo con capacidad de voz que funciona como guía personalizada para un assessment de conocimiento general en IA generativa dentro de Summan SAS. El objetivo es que cada persona (≈75 usuarios) realice una única sesión con el agente entre el 11 y 15 de agosto de 2025.
+### 🎯 Objetivos
 
-## ✨ Características
+- **Línea base de conocimiento** en IA generativa para estrategias de capacitación
+- **Transformación cultural** basada en IA con enfoque humano
+- **Experiencia empática** donde cada usuario se sienta escuchado y valorado
+- **Conversación natural** sin botones, solo voz y texto
 
-- 🎙️ **Voz Natural**: Usando Gemini 2.5 Flash Preview con audio nativo
-- 🗣️ **Acento Colombiano**: Voz "Orus" adaptada al español colombiano
-- ⚡ **Baja Latencia**: <1 segundo de respuesta end-to-end
-- 🔒 **Seguro**: Acceso exclusivo para @summan.com
-- 📱 **Responsive**: Funciona en cualquier dispositivo
-- 🎛️ **Administrable**: Portal para gestión de preguntas y configuración
+## 🏗️ Arquitectura del Sistema
 
-## 🛠️ Stack Tecnológico
+### Stack Tecnológico
 
-- **Frontend**: React + TypeScript + Lit Elements
-- **Backend**: Firebase Functions + Firestore
-- **Auth**: Firebase Auth (Google OAuth)
-- **APIs**: 
-  - Gemini 2.5 Flash Preview (voz bidireccional)
-  - Firebase (hosting, auth, db)
-- **Audio**:
-  - Input: 16kHz para captura óptima
-  - Output: 24kHz para reproducción de alta calidad
+| Componente | Tecnología | Versión |
+|------------|------------|---------|
+| **Frontend** | React + TypeScript | 18.x |
+| **Build Tool** | Vite | 5.x |
+| **UI Framework** | Material-UI (MUI) | 5.x |
+| **Backend** | Firebase Functions | Node.js 20 |
+| **Base de Datos** | Firestore | - |
+| **Autenticación** | Firebase Auth (Google) | - |
+| **STT/TTS** | Google Gemini API | 2.5 Flash |
+| **Generación de Texto** | Google Gemini API | 1.5 Flash |
+| **Deploy** | Firebase Hosting | - |
 
-## 🚀 Desarrollo Local
+### Estructura del Proyecto
 
-1. **Prerrequisitos**
-   - Node.js v18+
-   - Cuenta GCP con Gemini API habilitada
-   - Proyecto Firebase configurado
+```
+AgenteHumanoide/
+├── 📁 functions/                 # Firebase Cloud Functions
+│   ├── src/index.ts             # Endpoints: tts, stt, generate
+│   └── package.json
+├── 📁 public/
+│   ├── config/context.json      # Configuración del agente
+│   └── data/assessment-questions.json
+├── 📁 src/
+│   ├── components/
+│   │   ├── assessment/          # Componentes principales
+│   │   └── auth/               # Autenticación
+│   ├── services/               # Lógica de negocio
+│   ├── test/                   # Scripts de testing
+│   └── utils/                  # Utilidades
+├── 📁 .env                     # Variables de entorno (NO subir)
+└── 📄 SCRUM_PLAN.md           # Plan de desarrollo
+```
 
-2. **Configuración**
-   ```bash
-   # Clonar repositorio
-   git clone https://github.com/lufermalgo/AgenteHumanoide.git
-   cd AgenteHumanoide
+## 🚀 Instalación y Configuración
 
-   # Instalar dependencias
-   npm install
+### Prerrequisitos
 
-   # Configurar variables de entorno
-   cp .env.example .env.local
-   # Editar .env.local con tus claves
-   ```
+- Node.js 20+ 
+- npm o yarn
+- Firebase CLI
+- Cuenta Google Cloud (proyecto: `genai-385616`)
 
-3. **Desarrollo**
-   ```bash
-   # Iniciar emuladores Firebase
-   npm run emulators
-
-   # En otra terminal, iniciar frontend
-   npm start
-   ```
-
-4. **Testing**
-   ```bash
-   # Tests unitarios
-   npm test
-
-   # Tests e2e
-   npm run test:e2e
-   ```
-
-## 📝 Documentación
-
-- [Plan SCRUM](./SCRUM_PLAN.md)
-- [Guía de Desarrollo](./DEVELOPMENT.md)
-- [Configuración Firebase](./FIREBASE.md)
-
-## 🔑 Variables de Entorno
+### 1. Clonar el Repositorio
 
 ```bash
-# Firebase
-REACT_APP_FIREBASE_API_KEY=
-REACT_APP_FIREBASE_AUTH_DOMAIN=
-REACT_APP_FIREBASE_PROJECT_ID=
-REACT_APP_FIREBASE_STORAGE_BUCKET=
-REACT_APP_FIREBASE_MESSAGING_SENDER_ID=
-REACT_APP_FIREBASE_APP_ID=
-
-# Gemini
-REACT_APP_GEMINI_API_KEY=
-
-# Ambiente
-REACT_APP_ENV=development
+git clone https://github.com/lufermalgo/AgenteHumanoide.git
+cd AgenteHumanoide
 ```
+
+### 2. Instalar Dependencias
+
+```bash
+# Frontend
+npm install
+
+# Firebase Functions
+cd functions && npm install && cd ..
+```
+
+### 3. Configurar Variables de Entorno
+
+Crear archivo `.env` en la raíz:
+
+```env
+# Google Cloud Platform
+GOOGLE_PROJECT_ID=genai-385616
+GOOGLE_APPLICATION_CREDENTIALS=./service-account-key.json
+
+# Firebase Configuration (Frontend)
+VITE_FIREBASE_API_KEY=your_firebase_api_key
+VITE_FIREBASE_AUTH_DOMAIN=genai-385616.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=genai-385616
+VITE_FIREBASE_STORAGE_BUCKET=genai-385616.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=36072227238
+VITE_FIREBASE_APP_ID=1:36072227238:web:c5c58b3fb150632fd24f67
+
+# Gemini API
+VITE_GEMINI_API_KEY=your_gemini_api_key
+
+# D-ID API (opcional)
+VITE_DID_API_KEY=your_d_id_api_key
+
+# Configuración de Desarrollo
+VITE_USE_AUTH_EMULATOR=false
+VITE_USE_FIRESTORE_EMULATOR=false
+```
+
+### 4. Configurar Firebase
+
+```bash
+# Inicializar Firebase (si no está configurado)
+firebase init
+
+# Conectar al proyecto
+firebase use genai-385616
+```
+
+## 🏃‍♂️ Desarrollo Local
+
+### Iniciar Emuladores Firebase
+
+```bash
+# Terminar procesos existentes
+pkill -f "firebase.*emulators" 2>/dev/null || true
+
+# Iniciar emuladores
+firebase emulators:start --only functions,hosting,firestore,auth,storage
+```
+
+### Iniciar Servidor de Desarrollo
+
+```bash
+# Terminal 1: Frontend
+npm run dev
+
+# Terminal 2: Emuladores (si no están corriendo)
+firebase emulators:start --only functions,hosting,firestore,auth,storage
+```
+
+### URLs de Desarrollo
+
+- **Frontend:** http://localhost:3002/
+- **Firebase Emulator UI:** http://127.0.0.1:4001/
+- **Functions:** http://127.0.0.1:5002/
+- **Auth:** http://127.0.0.1:9091/
+- **Firestore:** http://127.0.0.1:8081/
+
+## 🧪 Testing
+
+### Testing del Sistema Generativo
+
+```bash
+# Probar respuestas generativas
+node test-generative-system.js
+
+# Probar lógica de nombres
+node test-name-logic.js
+
+# Probar Gemini API
+npx ts-node src/test/gemini-test.ts
+
+# Probar TTS
+npx ts-node src/test/gemini-audio-test.ts
+```
+
+### Testing de Funciones Firebase
+
+```bash
+# Probar endpoint generate
+curl -X POST http://localhost:5002/genai-385616/us-central1/generate \
+  -H 'Content-Type: application/json' \
+  -d '{"systemPrompt":"Eres un asistente amigable.","userPrompt":"Di hola de forma cálida.","maxTokens":50}'
+
+# Probar endpoint TTS
+curl -X POST http://localhost:5002/genai-385616/us-central1/tts \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"Hola, soy Anita-AI"}'
+```
+
+## 🎭 Configuración del Agente
+
+### Personalidad: Anita-AI
+
+El agente está configurado en `public/config/context.json`:
+
+```json
+{
+  "persona": {
+    "name": "Anita-AI",
+    "style": {
+      "tone": "Empático, cálido y cercano",
+      "formality": "Informal pero respetuoso",
+      "avoidLastNames": true,
+      "noJargon": true
+    }
+  },
+  "voices": {
+    "defaultVoice": "Kore",
+    "languageCode": "es-CO",
+    "sayNameAs": {
+      "Anita-AI": "Anita ei-ai"
+    }
+  }
+}
+```
+
+### Características del Sistema
+
+- **🎯 Context Engineering Real**: Respuestas generadas dinámicamente por Gemini
+- **👤 Detección Inteligente de Nombres**: Identifica nombres dobles y pregunta preferencias
+- **🗣️ Conversación Natural**: Sin botones, solo voz y turnos automáticos
+- **⚡ Latencia Optimizada**: <2 segundos entre respuesta y respuesta
+- **🔒 Autenticación Corporativa**: Solo usuarios @summan.com
+- **📊 Persistencia Completa**: Sesiones y respuestas en Firestore
+
+## 📊 Flujo de Usuario
+
+```mermaid
+graph TD
+    A[Usuario accede] --> B[Autenticación Google]
+    B --> C[Anita-AI saluda]
+    C --> D{¿Nombre doble?}
+    D -->|Sí| E[Pregunta preferencia]
+    D -->|No| F[Inicia assessment]
+    E --> F
+    F --> G[Lee pregunta]
+    G --> H[Escucha respuesta]
+    H --> I[Procesa con STT]
+    I --> J[Genera confirmación]
+    J --> K{¿Quiere agregar más?}
+    K -->|Sí| H
+    K -->|No| L[Siguiente pregunta]
+    L --> M{¿Última pregunta?}
+    M -->|No| G
+    M -->|Sí| N[Cierra sesión]
+```
+
+## 🔧 API Endpoints
+
+### `/api/tts` - Text-to-Speech
+```typescript
+POST /api/tts
+{
+  "text": "Hola, soy Anita-AI",
+  "voiceName": "Kore"
+}
+```
+
+### `/api/stt` - Speech-to-Text
+```typescript
+POST /api/stt
+{
+  "audioBase64": "base64_audio_data",
+  "mimeType": "audio/webm"
+}
+```
+
+### `/api/generate` - Generación de Texto
+```typescript
+POST /api/generate
+{
+  "systemPrompt": "Eres Anita-AI...",
+  "userPrompt": "Saluda al usuario",
+  "maxTokens": 200
+}
+```
+
+## 🚀 Deployment
+
+### Build de Producción
+
+```bash
+# Build frontend
+npm run build
+
+# Deploy a Firebase
+firebase deploy
+```
+
+### Variables de Entorno de Producción
+
+Configurar en Firebase Console:
+- `GEMINI_API_KEY`
+- `DID_API_KEY` (opcional)
+
+## 📈 Métricas y Monitoreo
+
+### Métricas de Éxito
+
+- **Latencia**: <2 segundos end-to-end
+- **Respuestas Generativas**: 100% únicas
+- **Empatía**: Evaluación cualitativa
+- **Personalización**: Por usuario
+- **Uptime**: 99.9%
+
+### Logs y Debugging
+
+```bash
+# Ver logs de Functions
+firebase functions:log
+
+# Ver logs de Firestore
+firebase firestore:log
+
+# Debug local
+firebase emulators:start --debug
+```
+
+## 🔒 Seguridad
+
+### Buenas Prácticas Implementadas
+
+- ✅ **Variables de entorno** para claves sensibles
+- ✅ **Autenticación corporativa** (@summan.com)
+- ✅ **Validación de entrada** en todos los endpoints
+- ✅ **CORS configurado** para desarrollo
+- ✅ **Rate limiting** en Functions
+- ✅ **Logs de auditoría** en Firestore
+
+### Archivos Sensibles
+
+**NO subir al repositorio:**
+- `.env`
+- `service-account-key.json`
+- `*.pem`
+- `*.key`
 
 ## 🤝 Contribución
 
-1. Crear rama feature (`git checkout -b feature/AmazingFeature`)
-2. Commit cambios (`git commit -m 'feat: Add AmazingFeature'`)
-3. Push a la rama (`git push origin feature/AmazingFeature`)
-4. Abrir Pull Request
+### Flujo de Desarrollo
 
-## 📄 Licencia
+1. **Crear rama** desde `main`
+2. **Desarrollar** con testing local
+3. **Commit** con mensajes descriptivos
+4. **Push** y crear Pull Request
+5. **Review** y merge a `main`
 
-Distribuido bajo la Licencia MIT. Ver `LICENSE` para más información.
+### Convenciones de Código
 
-## ✨ Agradecimientos
+- **TypeScript** estricto
+- **ESLint** + **Prettier**
+- **Commits** en español
+- **Documentación** en código
+- **Testing** obligatorio
 
-- Basado en [live-audio](https://github.com/google/generative-ai-js/tree/main/examples/live-audio) de Google
-- Inspirado en [Open WebUI](https://github.com/open-webui/open-webui)
+## 📚 Documentación Adicional
+
+- [SCRUM_PLAN.md](./SCRUM_PLAN.md) - Plan de desarrollo detallado
+- [Context Engineering](./docs/context-engineering.md) - Configuración del agente
+- [API Reference](./docs/api-reference.md) - Documentación de APIs
+- [Deployment Guide](./docs/deployment.md) - Guía de despliegue
+
+## 🆘 Troubleshooting
+
+### Problemas Comunes
+
+**Error: "API key not valid"**
+```bash
+# Verificar variable de entorno
+echo $VITE_GEMINI_API_KEY
+```
+
+**Error: "Port already in use"**
+```bash
+# Limpiar procesos
+pkill -f "firebase.*emulators"
+pkill -f "vite"
+```
+
+**Error: "Firebase not initialized"**
+```bash
+# Verificar configuración
+firebase projects:list
+firebase use genai-385616
+```
+
+## 📞 Soporte
+
+- **Desarrollador:** AI Assistant (Claude)
+- **Proyecto:** Summan SAS - Agente Humanoide
+- **Fecha límite:** 11 de agosto de 2025
+- **Repositorio:** https://github.com/lufermalgo/AgenteHumanoide
+
+---
+
+**Última actualización:** 7 de agosto de 2025  
+**Versión:** 1.0.0  
+**Estado:** Sistema Generativo Completo ✅

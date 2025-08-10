@@ -1,45 +1,61 @@
-# Dependencias
+# Dependencies
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Variables de entorno - CRÍTICO PARA SEGURIDAD
+# Production builds
+dist/
+build/
+functions/lib/
+
+# Environment variables (CRÍTICO - NO SUBIR)
 .env
 .env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Credenciales GCP
-service-account-key.json
-*.json
-!package*.json
-!tsconfig.json
-
-# Build outputs
-build/
-dist/
-.next/
-out/
+.env.development
+.env.test
+.env.production
+.env.bak
+.env.backup
+*.env
 
 # Firebase
 .firebase/
 firebase-debug.log
 firestore-debug.log
+ui-debug.log
+
+# Service account keys (CRÍTICO - NO SUBIR)
+service-account-key.json
+service-account-key-*.json
+*.pem
+*.key
+*-key.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
-logs
+logs/
 *.log
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
 
 # Coverage directory used by tools like istanbul
 coverage/
+*.lcov
 
 # nyc test coverage
 .nyc_output
@@ -49,6 +65,15 @@ jspm_packages/
 
 # Optional npm cache directory
 .npm
+
+# Optional eslint cache
+.eslintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -63,27 +88,57 @@ jspm_packages/
 .cache
 .parcel-cache
 
-# MacOS
-.DS_Store
+# Next.js build output
+.next
 
-# Windows
-Thumbs.db
+# Nuxt.js build / generate output
+.nuxt
 
-# IDE
-.vscode/
-.idea/
-.cursor/
-*.swp
-*.swo
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
 
 # Temporary folders
 tmp/
 temp/
 
-# D-ID API keys y configuraciones sensibles
-d-id-config.json
-api-keys.json
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Proyectos de referencia
-@open-webui/
-@live-audio/
+# Audio files (temporales)
+*.wav
+*.mp3
+*.webm
+*.ogg
+
+# Test outputs
+test-output/
+coverage/
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Local development
+.local/
+local/
+
+# Emulator data
+emulator-data/
+
+# Sensitive data
+secrets/
+credentials/
+keys/

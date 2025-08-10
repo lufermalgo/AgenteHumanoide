@@ -1,0 +1,34 @@
+{
+  "questions": [
+    {
+      "id": "role",
+      "text": "¿Cuál es tu rol actual en Summan y qué responsabilidades tienes?",
+      "timeLimit": 120,
+      "required": true
+    },
+    {
+      "id": "ai_experience",
+      "text": "¿Qué experiencia tienes con herramientas de IA generativa? ¿Cuáles has usado?",
+      "timeLimit": 180,
+      "required": true
+    },
+    {
+      "id": "ai_challenges",
+      "text": "¿Cuáles son los principales desafíos que has encontrado al usar IA generativa en tu trabajo?",
+      "timeLimit": 180,
+      "required": true
+    },
+    {
+      "id": "ai_opportunities",
+      "text": "¿Qué oportunidades ves para implementar IA generativa en tus procesos actuales?",
+      "timeLimit": 180,
+      "required": true
+    },
+    {
+      "id": "ai_learning",
+      "text": "¿Qué te gustaría aprender sobre IA generativa para mejorar tu trabajo?",
+      "timeLimit": 180,
+      "required": true
+    }
+  ]
+}
