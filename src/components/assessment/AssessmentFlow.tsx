@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, Button } from '@mui/material';
 import AssessmentAudio from './AssessmentAudio';
 import InteractionStatus from '../UI/InteractionStatus';
 import { load_questions, AssessmentQuestion } from '../../services/questions';
@@ -46,6 +46,34 @@ const StatusIndicator = styled(Typography)(({ theme }) => ({
   fontStyle: 'italic',
 }));
 
+const StartButton = styled(Button)(({ theme }) => ({
+  backgroundColor: '#9bc41c',
+  color: 'white',
+  padding: theme.spacing(2, 4),
+  fontSize: '1.2rem',
+  borderRadius: theme.spacing(3),
+  textTransform: 'none',
+  fontWeight: 600,
+  boxShadow: theme.shadows[2],
+  '&:hover': {
+    backgroundColor: '#8bb31a',
+    boxShadow: theme.shadows[4],
+  },
+  '&:active': {
+    transform: 'translateY(1px)',
+  },
+}));
+
+const WelcomeCard = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(6),
+  maxWidth: '600px',
+  width: '100%',
+  textAlign: 'center',
+  borderRadius: theme.spacing(3),
+  boxShadow: theme.shadows[4],
+  background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+}));
+
 const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
   const [qIndex, setQIndex] = useState<number>(() => {
@@ -61,6 +89,8 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [currentPhase, setCurrentPhase] = useState<'idle' | 'speaking' | 'listening' | 'processing' | 'followup'>('idle');
   const [statusMessage, setStatusMessage] = useState<string>('');
+  const [isStarted, setIsStarted] = useState<boolean>(false);
+  const [isInitialized, setIsInitialized] = useState<boolean>(false);
   
   const currentQuestion = questions[qIndex]?.text || 'Cargando pregunta…';
   const effectiveName = preferredName || nameAnalysis?.preferred || 'Hola';
@@ -89,11 +119,19 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
         if (analysis.needsAsk) {
           localStorage.setItem('assessmentia-needsNamePreference', 'true');
         }
+        
+        setIsInitialized(true);
       } catch (error) {
         console.error('Error initializing assessment:', error);
       }
     })();
   }, [displayName]);
+
+  const handleStartAssessment = () => {
+    setIsStarted(true);
+    setCurrentPhase('speaking');
+    setStatusMessage('Iniciando conversación...');
+  };
 
   const handleTranscriptionComplete = async (text: string) => {
     setCurrentPhase('processing');
@@ -144,32 +182,50 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
 
   return (
     <Container>
-      <QuestionCard>
-        <Question variant="h1">
-          {currentQuestion}
-        </Question>
-      </QuestionCard>
-      
-      {/* Indicador visual de estado de interacción */}
-      <Box sx={{ mb: 3, width: '100%', maxWidth: '400px' }}>
-        <InteractionStatus
-          phase={currentPhase}
-          status={statusMessage}
-          isListening={isListening}
-          isSpeaking={isSpeaking}
-        />
-      </Box>
-      
-      <AssessmentAudio
-        onTranscriptionComplete={handleTranscriptionComplete}
-        questionText={currentQuestion}
-        userName={effectiveName}
-        agentContext={agentContext}
-        onNamePreferenceSet={handleNamePreferenceSet}
-        nameAnalysis={nameAnalysis}
-        onListeningChange={setIsListening}
-        onSpeakingChange={setIsSpeaking}
-      />
+      {!isStarted ? (
+        <WelcomeCard>
+          <Typography variant="h4" gutterBottom>
+            Bienvenido a AssessmentIA
+          </Typography>
+          <Typography variant="body1" paragraph>
+            Este es un sistema de evaluación automatizada.
+            Para comenzar, por favor, haz un gesto de inicio.
+          </Typography>
+          <StartButton onClick={handleStartAssessment}>
+            Iniciar Evaluación
+          </StartButton>
+        </WelcomeCard>
+      ) : (
+        <>
+          <QuestionCard>
+            <Question variant="h1">
+              {currentQuestion}
+            </Question>
+          </QuestionCard>
+          
+          {/* Indicador visual de estado de interacción */}
+          <Box sx={{ mb: 3, width: '100%', maxWidth: '400px' }}>
+            <InteractionStatus
+              phase={currentPhase}
+              status={statusMessage}
+              isListening={isListening}
+              isSpeaking={isSpeaking}
+            />
+          </Box>
+          
+                     <AssessmentAudio
+             onTranscriptionComplete={handleTranscriptionComplete}
+             questionText={currentQuestion}
+             userName={effectiveName}
+             agentContext={agentContext}
+             onNamePreferenceSet={handleNamePreferenceSet}
+             nameAnalysis={nameAnalysis}
+             onListeningChange={setIsListening}
+             onSpeakingChange={setIsSpeaking}
+             isStarted={isStarted}
+           />
+        </>
+      )}
     </Container>
   );
 };

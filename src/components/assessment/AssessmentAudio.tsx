@@ -10,6 +10,7 @@ interface Props {
   nameAnalysis?: NameAnalysis | null;
   onListeningChange?: (isListening: boolean) => void;
   onSpeakingChange?: (isSpeaking: boolean) => void;
+  isStarted?: boolean;
 }
 
 const AssessmentAudio: React.FC<Props> = ({ 
@@ -20,7 +21,8 @@ const AssessmentAudio: React.FC<Props> = ({
   onNamePreferenceSet,
   nameAnalysis,
   onListeningChange,
-  onSpeakingChange
+  onSpeakingChange,
+  isStarted = false
 }) => {
   const [started, setStarted] = useState(false);
   const [status, setStatus] = useState<string>('');
@@ -450,12 +452,12 @@ const AssessmentAudio: React.FC<Props> = ({
     }
   }, [questionText, started, phase, runCycle]);
 
-  // Iniciar el ciclo cuando el componente se monta y el contexto está listo
+  // Iniciar el ciclo cuando el usuario haga clic en el botón de inicio
   useEffect(() => {
-    if (agentContext && !started) {
+    if (isStarted && agentContext && !started) {
       runCycle();
     }
-  }, [agentContext, started, runCycle]);
+  }, [isStarted, agentContext, started, runCycle]);
 
   // Limpieza al desmontar
   useEffect(() => {
