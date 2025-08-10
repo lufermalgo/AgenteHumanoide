@@ -451,9 +451,8 @@ async function runAllTests(): Promise<void> {
 // EJECUCIÓN
 // ============================================================================
 
-if (require.main === module) {
-  runAllTests().catch(console.error);
-}
+// Ejecutar tests si se llama directamente
+runAllTests().catch(console.error);
 
 export {
   testConfiguration,

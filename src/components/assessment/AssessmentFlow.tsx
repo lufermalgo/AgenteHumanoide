@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { styled } from '@mui/material/styles';
 import { Box, Typography, Paper } from '@mui/material';
 import AssessmentAudio from './AssessmentAudio';
+import InteractionStatus from '../UI/InteractionStatus';
 import { load_questions, AssessmentQuestion } from '../../services/questions';
 import { save_answer, start_session } from '../../services/db';
 import { 
@@ -58,6 +59,8 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
+  const [currentPhase, setCurrentPhase] = useState<'idle' | 'speaking' | 'listening' | 'processing' | 'followup'>('idle');
+  const [statusMessage, setStatusMessage] = useState<string>('');
   
   const currentQuestion = questions[qIndex]?.text || 'Cargando pregunta…';
   const effectiveName = preferredName || nameAnalysis?.preferred || 'Hola';
@@ -93,6 +96,8 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
   }, [displayName]);
 
   const handleTranscriptionComplete = async (text: string) => {
+    setCurrentPhase('processing');
+    setStatusMessage('Guardando respuesta...');
     setIsProcessing(true);
     try {
       const q = questions[qIndex];
@@ -103,6 +108,8 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
       console.error('Error saving answer:', error);
     } finally {
       setIsProcessing(false);
+      setCurrentPhase('idle');
+      setStatusMessage('');
       // Avanzar a la siguiente pregunta
       setQIndex((i) => {
         const next = Math.min(i + 1, Math.max(0, questions.length - 1));
@@ -118,12 +125,22 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
     localStorage.removeItem('assessmentia-needsNamePreference');
   };
 
-  const getStatusText = (): string => {
-    if (isSpeaking) return agentContext?.ui.indicators.speaking || 'Hablando…';
-    if (isListening) return agentContext?.ui.indicators.listening || 'Escuchando…';
-    if (isProcessing) return agentContext?.ui.indicators.processing || 'Procesando…';
-    return '';
-  };
+  // Actualizar fase basada en el estado actual
+  useEffect(() => {
+    if (isSpeaking) {
+      setCurrentPhase('speaking');
+      setStatusMessage('Anita-AI está hablando...');
+    } else if (isListening) {
+      setCurrentPhase('listening');
+      setStatusMessage('Escuchando tu respuesta...');
+    } else if (isProcessing) {
+      setCurrentPhase('processing');
+      setStatusMessage('Procesando...');
+    } else {
+      setCurrentPhase('idle');
+      setStatusMessage('');
+    }
+  }, [isSpeaking, isListening, isProcessing]);
 
   return (
     <Container>
@@ -131,12 +148,18 @@ const AssessmentFlow: React.FC<Props> = ({ displayName }) => {
         <Question variant="h1">
           {currentQuestion}
         </Question>
-        {getStatusText() && (
-          <StatusIndicator>
-            {getStatusText()}
-          </StatusIndicator>
-        )}
       </QuestionCard>
+      
+      {/* Indicador visual de estado de interacción */}
+      <Box sx={{ mb: 3, width: '100%', maxWidth: '400px' }}>
+        <InteractionStatus
+          phase={currentPhase}
+          status={statusMessage}
+          isListening={isListening}
+          isSpeaking={isSpeaking}
+        />
+      </Box>
+      
       <AssessmentAudio
         onTranscriptionComplete={handleTranscriptionComplete}
         questionText={currentQuestion}

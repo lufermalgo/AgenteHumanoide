@@ -36,13 +36,65 @@ const AssessmentAudio: React.FC<Props> = ({
   const lastTranscriptRef = useRef<string>('');
   const timerRef = useRef<number | null>(null);
   const lastEndSpeakMsRef = useRef<number>(0);
+  
+  // 🔧 CONTROL DE AUDIO - Evitar solapamientos
+  const currentAudioRef = useRef<HTMLAudioElement | null>(null);
+  const isSpeakingRef = useRef<boolean>(false);
+  const audioQueueRef = useRef<Array<() => Promise<void>>>([]);
+  const isProcessingAudioRef = useRef<boolean>(false);
+
+  // Función para detener audio actual
+  const stopCurrentAudio = useCallback(() => {
+    if (currentAudioRef.current) {
+      currentAudioRef.current.pause();
+      currentAudioRef.current.currentTime = 0;
+      currentAudioRef.current = null;
+    }
+    isSpeakingRef.current = false;
+    onSpeakingChange?.(false);
+  }, [onSpeakingChange]);
+
+  // Función para reproducir audio de forma controlada
+  const playAudioControlled = useCallback(async (audioUrl: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      // Detener audio anterior si existe
+      stopCurrentAudio();
+      
+      // Crear nuevo audio
+      const audio = new Audio(audioUrl);
+      currentAudioRef.current = audio;
+      isSpeakingRef.current = true;
+      onSpeakingChange?.(true);
+      
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        currentAudioRef.current = null;
+        isSpeakingRef.current = false;
+        onSpeakingChange?.(false);
+        resolve();
+      };
+      
+      audio.onerror = (error) => {
+        console.error('Error playing audio:', error);
+        currentAudioRef.current = null;
+        isSpeakingRef.current = false;
+        onSpeakingChange?.(false);
+        reject(error);
+      };
+      
+      audio.play().catch(reject);
+    });
+  }, [stopCurrentAudio, onSpeakingChange]);
 
   // Función para generar y reproducir respuesta dinámica
   const generateAndSpeak = useCallback(async (
     situation: 'greeting' | 'name_preference' | 'name_confirmation' | 'add_more' | 'question_intro',
     userInput?: string
-  ) => {
-    if (!agentContext) return;
+  ): Promise<string | null> => {
+    if (!agentContext || isSpeakingRef.current) {
+      console.log('Audio en progreso, saltando generación');
+      return null;
+    }
     
     try {
       setStatus('Generando respuesta...');
@@ -69,19 +121,13 @@ const AssessmentAudio: React.FC<Props> = ({
       if (resp.ok) {
         const blob = await resp.blob();
         const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
         
         setStatus('Hablando…');
-        onSpeakingChange?.(true);
         
-        await audio.play();
+        // Reproducir audio de forma controlada
+        await playAudioControlled(url);
         
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          onSpeakingChange?.(false);
-          setStatus('');
-        };
-        
+        setStatus('');
         return response;
       }
     } catch (error) {
@@ -89,12 +135,14 @@ const AssessmentAudio: React.FC<Props> = ({
       setStatus('');
       onSpeakingChange?.(false);
     }
-  }, [agentContext, userName, questionText, onSpeakingChange]);
+    
+    return null;
+  }, [agentContext, userName, questionText, onSpeakingChange, playAudioControlled]);
 
   // Precalentar TTS (reduce cold start): preparar introducción + pregunta
   useEffect(() => {
     const warmup = async () => {
-      if (!agentContext) return;
+      if (!agentContext || isSpeakingRef.current) return;
       
       try {
         // Generar saludo inicial dinámico
@@ -128,13 +176,12 @@ const AssessmentAudio: React.FC<Props> = ({
   }, [agentContext, questionText, userName]);
 
   const runCycle = useCallback(async () => {
-    if (!agentContext) return;
+    if (!agentContext || isSpeakingRef.current) return;
     
     try {
       setStarted(true);
       setPhase('speaking');
       setStatus('Hablando…');
-      onSpeakingChange?.(true);
 
       // Garantizar gesto de usuario: crear/resumir AudioContext aquí
       const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -143,35 +190,30 @@ const AssessmentAudio: React.FC<Props> = ({
       }
 
       // Saludo inicial dinámico
-      let greetingText = '';
-      if (prefetchedUrlRef.current) {
+      if (prefetchedUrlRef.current && prefetchedReadyRef.current) {
         // Usar prefetched si está listo
-        const audio = new Audio(prefetchedUrlRef.current);
-        await audio.play();
-        audio.onended = () => {
-          URL.revokeObjectURL(prefetchedUrlRef.current!);
-          prefetchedUrlRef.current = null;
-          prefetchedReadyRef.current = false;
-        };
+        await playAudioControlled(prefetchedUrlRef.current);
+        prefetchedUrlRef.current = null;
+        prefetchedReadyRef.current = false;
       } else {
         // Generar y reproducir saludo dinámico
-        greetingText = await generateAndSpeak('greeting');
+        await generateAndSpeak('greeting');
       }
+
+      // Pausa natural entre interacciones
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Si necesita preguntar preferencia de nombre
       if (nameAnalysis?.needsAsk) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa natural
         await generateAndSpeak('name_preference');
       } else {
         // Ir directamente a la pregunta
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa natural
         await generateAndSpeak('question_intro');
       }
 
       // Continuar con el ciclo de escucha...
       setPhase('listening');
       setStatus('Escuchando…');
-      onSpeakingChange?.(false);
       onListeningChange?.(true);
 
       // Configurar grabación de audio
@@ -378,7 +420,7 @@ const AssessmentAudio: React.FC<Props> = ({
       onSpeakingChange?.(false);
       onListeningChange?.(false);
     }
-  }, [agentContext, nameAnalysis, onNamePreferenceSet, onTranscriptionComplete, onSpeakingChange, onListeningChange, generateAndSpeak]);
+  }, [agentContext, nameAnalysis, onNamePreferenceSet, onTranscriptionComplete, onSpeakingChange, onListeningChange, generateAndSpeak, playAudioControlled]);
 
   // Función auxiliar para extraer nombre preferido
   const extractPreferredName = (text: string, firstNames: string[]): string | null => {
@@ -403,31 +445,38 @@ const AssessmentAudio: React.FC<Props> = ({
 
   // Disparar automáticamente un nuevo ciclo cuando cambia la pregunta
   useEffect(() => {
-    if (started && phase === 'idle' && questionText) {
+    if (started && questionText && phase === 'idle') {
       runCycle();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [questionText, phase]);
+  }, [questionText, started, phase, runCycle]);
+
+  // Iniciar el ciclo cuando el componente se monta y el contexto está listo
+  useEffect(() => {
+    if (agentContext && !started) {
+      runCycle();
+    }
+  }, [agentContext, started, runCycle]);
+
+  // Limpieza al desmontar
+  useEffect(() => {
+    return () => {
+      if (rafIdRef.current) cancelAnimationFrame(rafIdRef.current);
+      if (timerRef.current) clearInterval(timerRef.current);
+      if (mediaRecorderRef.current?.state === 'recording') mediaRecorderRef.current.stop();
+      streamRef.current?.getTracks().forEach(track => track.stop());
+      try { audioCtxRef.current?.close(); } catch {}
+      
+      // 🔧 LIMPIEZA DE AUDIO - Detener audio actual
+      stopCurrentAudio();
+    };
+  }, [stopCurrentAudio]);
 
   return (
-    <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      {!started && (
-        <button
-          onClick={runCycle}
-          style={{
-            background: '#9bc41c', color: '#fff', border: 'none', borderRadius: 12,
-            padding: '12px 20px', cursor: 'pointer', fontSize: 16
-          }}
-        >
-          Iniciar
-        </button>
-      )}
-      {status && (
-        <div style={{ marginTop: 12, color: '#666666' }}>
-          {status} {phase === 'listening' && elapsedMs > 0 ? `(${Math.floor(elapsedMs/1000)}s)` : ''}
-        </div>
-      )}
-      {/* Sin botones manuales durante la escucha para mantener interacción natural */}
+    <div style={{ textAlign: 'center', padding: '20px' }}>
+      {status && <p>{status}</p>}
+      {/* No mostrar transcripción del usuario */}
+      {/* {lastTranscriptRef.current && <p>Tú: {lastTranscriptRef.current}</p>} */}
+      {/* No mostrar botones de enviar/escuchar */}
     </div>
   );
 };
