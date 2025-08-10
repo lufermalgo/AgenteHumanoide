@@ -114,66 +114,45 @@ export async function generate_agent_response(
   questionText?: string
 ): Promise<string> {
   
-  const systemPrompt = `Eres ${context.persona.name} (pronunciado "${context.voices.sayNameAs[context.persona.name] || context.persona.name}"), un asistente de IA empático y cercano para realizar assessments de conocimiento en IA generativa.
-
-TU PERSONALIDAD:
-- ${context.persona.style.tone}
-- ${context.persona.style.formality}
-- ${context.persona.style.avoidLastNames ? 'Nunca uses apellidos del usuario' : ''}
-- ${context.persona.style.noJargon ? 'Evita jerga técnica, usa lenguaje accesible' : ''}
-
-DIRECTIVAS IMPORTANTES:
-${context.directives.map(d => `- ${d}`).join('\n')}
-
-REGLAS DE INTERACCIÓN:
-${context.intro.rules.map(r => `- ${r}`).join('\n')}
-
-IMPORTANTE: 
-- Sé EMPÁTICO y CÁLIDO en cada respuesta
-- Varía tu forma de expresarte, no uses siempre las mismas frases
-- Mantén un tono conversacional natural
-- Muestra genuino interés por la persona
-- Sé específico y personalizado en tus respuestas`;
-
-  let userPrompt = '';
+  // Importar el motor de prompts
+  const { PromptEngine } = await import('./prompt-engine');
+  const promptEngine = new PromptEngine();
   
-  switch (situation) {
-    case 'greeting':
-      userPrompt = `Genera un saludo inicial cálido y empático para ${userName || 'el usuario'}. 
-      Explica brevemente el propósito del assessment de manera amigable y tranquilizadora.
-      Incluye que es una conversación natural, no un examen, y que quieres conocer su perspectiva sobre IA.
-      Sé específico y personalizado.`;
-      break;
-      
-    case 'name_preference':
-      const firstNames = userName?.split(' ') || [];
-      userPrompt = `El usuario se llama ${userName}. Detecto que tiene ${firstNames.length} nombre(s): ${firstNames.join(', ')}.
-      Pregúntale de forma cálida y empática cómo prefiere que lo llame.
-      Ofrece las opciones de manera natural y conversacional.
-      Sé específico con sus nombres reales.`;
-      break;
-      
-    case 'name_confirmation':
-      userPrompt = `El usuario acaba de confirmar que prefiere que lo llame "${userName}".
-      Confirma su elección de forma cálida y empática.
-      Transición suavemente a la primera pregunta: "${questionText}".
-      Sé personalizado y muestra que recuerdas su preferencia.`;
-      break;
-      
-    case 'add_more':
-      userPrompt = `El usuario acaba de responder una pregunta sobre IA.
-      Pregúntale de forma cálida y empática si desea agregar algo más a su respuesta.
-      Muestra interés genuino en lo que dijo.
-      Sé variado en tu forma de preguntar, no uses siempre la misma frase.`;
-      break;
-      
-    case 'question_intro':
-      userPrompt = `Estás por hacer la siguiente pregunta: "${questionText}".
-      Introduce la pregunta de forma natural y conversacional.
-      Mantén el tono empático y cercano.
-      Sé específico y personalizado.`;
-      break;
-  }
+  // Mapear situaciones del contexto actual a las del nuevo sistema
+  const situationMap: Record<string, any> = {
+    'greeting': 'greeting',
+    'name_preference': 'name_preference',
+    'name_confirmation': 'name_confirmation',
+    'add_more': 'follow_up',
+    'question_intro': 'question_intro'
+  };
+  
+  const mappedSituation = situationMap[situation] || 'greeting';
+  
+  // Preparar contexto para el motor de prompts
+  const promptContext = {
+    userName,
+    currentQuestion: questionText,
+    userInput,
+    sessionId: `session_${Date.now()}`,
+    questionIndex: 1,
+    totalQuestions: 3,
+    elapsedTime: '0 minutos',
+    conversationPhase: situation,
+    lastUserResponse: userInput,
+    sessionContext: `Usuario: ${userName}, Situación: ${situation}`
+  };
+  
+  // Generar prompt usando el nuevo sistema
+  const promptResponse = await promptEngine.generatePrompt({
+    situation: mappedSituation,
+    userInput,
+    context: promptContext
+  });
+  
+  const systemPrompt = promptResponse.systemPrompt;
+
+  const userPrompt = promptResponse.userPrompt;
 
   try {
     const response = await fetch('/api/generate', {
