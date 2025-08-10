@@ -10,8 +10,8 @@
 class AudioController {
   private currentAudio: HTMLAudioElement | null = null;
   private isPlaying = false;
-  private audioQueue: Array<() => Promise<void>> = [];
-  private isProcessing = false;
+  // private audioQueue: Array<() => Promise<void>> = [];  // Comentado - no utilizado
+  // private isProcessing = false;  // Comentado - no utilizado
 
   async playAudio(text: string, duration: number = 2000): Promise<void> {
     return new Promise((resolve, reject) => {

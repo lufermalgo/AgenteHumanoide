@@ -249,7 +249,7 @@ export function extract_preferred_first_name(displayName?: string, context?: Age
     fullName: full, 
     firstNames, 
     preferred, 
-    needsAsk,
+    needsAsk: needsAsk ?? false,
     questionText
   };
 }

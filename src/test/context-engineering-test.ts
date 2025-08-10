@@ -40,7 +40,7 @@ async function testConfiguration(): Promise<{ passed: boolean; details: string[]
   ];
   
   requiredComponents.forEach(component => {
-    if (CONTEXT_ENGINEERING_CONFIG[component]) {
+    if (component in CONTEXT_ENGINEERING_CONFIG) {
       details.push(`✅ Componente ${component} presente`);
     } else {
       details.push(`❌ Componente ${component} faltante`);
@@ -48,7 +48,7 @@ async function testConfiguration(): Promise<{ passed: boolean; details: string[]
   });
   
   return {
-    passed: validation.isValid && requiredComponents.every(c => CONTEXT_ENGINEERING_CONFIG[c]),
+    passed: validation.isValid && requiredComponents.every(c => c in CONTEXT_ENGINEERING_CONFIG),
     details
   };
 }
@@ -243,7 +243,7 @@ async function testQualityMetrics(): Promise<{ passed: boolean; details: string[
     ];
     
     requiredMetrics.forEach(metric => {
-      if (metrics[metric]) {
+      if (metric in metrics) {
         details.push(`✅ Métrica ${metric} presente`);
       } else {
         details.push(`❌ Métrica ${metric} faltante`);

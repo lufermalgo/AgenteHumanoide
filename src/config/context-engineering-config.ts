@@ -3,7 +3,290 @@
  * Parámetros ajustables para el comportamiento del agente
  */
 
-export const CONTEXT_ENGINEERING_CONFIG = {
+// Agregar tipo de índice para permitir acceso dinámico
+export interface ContextEngineeringConfigType {
+  [key: string]: any;
+  objectives: {
+    primaryGoal: string;
+    successMetrics: {
+      completionTime: { min: number; max: number; unit: string; };
+      userSatisfaction: { target: number; min: number; };
+      responseQuality: { target: number; min: number; };
+      engagementLevel: { target: number; min: number; };
+    };
+    constraints: {
+      timeLimit: { max: number; unit: string; };
+      responseLength: { max: number; unit: string; };
+      userInterruptions: { max: number; };
+    };
+  };
+  model: {
+    identity: string;
+    role: string;
+    expertise: string[];
+    personality: {
+      tone: string;
+      style: string;
+      culturalContext: string;
+      formality: string;
+    };
+    avoidBehaviors: string[];
+  };
+  interaction: {
+    rules: {
+      mustDo: string[];
+      mustNotDo: string[];
+      priorityOrder: string[];
+    };
+    uncertaintyHandling: {
+      strategy: string;
+      defaultResponse: string;
+      clarificationTriggers: string[];
+    };
+    conflictResolution: {
+      primaryRule: string;
+      fallbackStrategy: string;
+      escalationThreshold: number;
+    };
+  };
+  prompts: {
+    structure: {
+      systemInstructions: {
+        includeRole: boolean;
+        includeDirectives: boolean;
+        includeContext: boolean;
+        includeExamples: boolean;
+      };
+      userInstructions: {
+        includeSituation: boolean;
+        includeUserInput: boolean;
+        includeContext: boolean;
+        includeConstraints: boolean;
+      };
+      outputFormat: {
+        maxLength: number;
+        minLength: number;
+        includeEmpathy: boolean;
+        includePersonalization: boolean;
+      };
+    };
+    templates: {
+      greeting: {
+        includePurpose: boolean;
+        includeReassurance: boolean;
+        includePersonalization: boolean;
+      };
+      questionIntro: {
+        includeTransition: boolean;
+        includeContext: boolean;
+        includePersonalization: boolean;
+      };
+      responseProcessing: {
+        includeUnderstanding: boolean;
+        includeEmpathy: boolean;
+        includeFollowUp: boolean;
+      };
+      followUp: {
+        includeInterest: boolean;
+        includeVariation: boolean;
+        includeNonPressure: boolean;
+      };
+      namePreference: {
+        includeOptions: boolean;
+        includeNaturalness: boolean;
+        includeEmpathy: boolean;
+      };
+      nameConfirmation: {
+        includeConfirmation: boolean;
+        includeTransition: boolean;
+        includePersonalization: boolean;
+      };
+      closing: {
+        includeGratitude: boolean;
+        includeRecognition: boolean;
+        includeWarmth: boolean;
+      };
+    };
+    validation: {
+      qualityThreshold: number;
+      empathyRequired: boolean;
+      personalizationRequired: boolean;
+      noJudgmentRequired: boolean;
+      lengthConstraints: {
+        min: number;
+        max: number;
+      };
+    };
+  };
+  context: {
+    sources: {
+      preloadedData: string[];
+      integrations: string[];
+      externalData: string[];
+    };
+    updatePolicies: {
+      frequency: string;
+      triggers: string[];
+      validationRules: string[];
+    };
+  };
+  memory: {
+    shortTerm: {
+      maxSize: number;
+      cleanupStrategy: string;
+      retentionTime: string;
+    };
+    longTerm: {
+      storageStrategy: string;
+      retentionPolicy: string;
+      summarizationStrategy: string;
+      maxSummaryLength: number;
+    };
+    conversationHistory: {
+      maxEntries: number;
+      includeContext: boolean;
+      includeTimestamps: boolean;
+      includeQualityMetrics: boolean;
+    };
+  };
+  errorHandling: {
+    validationProtocols: {
+      responseQuality: string[];
+      contextRelevance: string[];
+      userIntent: string[];
+    };
+    clarificationStrategies: {
+      ambiguousInput: string;
+      incompleteData: string;
+      conflictingInfo: string;
+    };
+    fallbackResponses: {
+      apiFailure: string;
+      contextLoss: string;
+      timeout: string;
+    };
+  };
+  qualityMetrics: {
+    responseQuality: {
+      relevance: { target: number; weight: number; };
+      empathy: { target: number; weight: number; };
+      clarity: { target: number; weight: number; };
+      naturalness: { target: number; weight: number; };
+    };
+    interactionFlow: {
+      turnTaking: { target: number; weight: number; };
+      contextRetention: { target: number; weight: number; };
+      userEngagement: { target: number; weight: number; };
+    };
+    assessmentSpecific: {
+      questionClarity: { target: number; weight: number; };
+      responseCapture: { target: number; weight: number; };
+      followUpEffectiveness: { target: number; weight: number; };
+    };
+    thresholds: {
+      minimumQuality: number;
+      warningThreshold: number;
+      excellentThreshold: number;
+    };
+  };
+  intentAnalysis: {
+    detection: {
+      enthusiasm: {
+        keywords: string[];
+        confidence: number;
+      };
+      confusion: {
+        keywords: string[];
+        confidence: number;
+      };
+      reluctance: {
+        keywords: string[];
+        confidence: number;
+      };
+      completeResponse: {
+        indicators: string[];
+        minLength: number;
+        confidence: number;
+      };
+    };
+    adjustment: {
+      confusion: {
+        action: string;
+        promptAddition: string;
+      };
+      reluctance: {
+        action: string;
+        promptAddition: string;
+      };
+      enthusiasm: {
+        action: string;
+        promptAddition: string;
+      };
+    };
+  };
+  performance: {
+    latency: {
+      target: number; // ms
+      warning: number; // ms
+      critical: number; // ms
+      optimization: {
+        preloadTemplates: boolean;
+        cacheContext: boolean;
+        parallelProcessing: boolean;
+      };
+    };
+    memory: {
+      maxContextSize: number;
+      cleanupInterval: number; // interacciones
+      optimization: {
+        compressHistory: boolean;
+        prioritizeRecent: boolean;
+        removeIrrelevant: boolean;
+      };
+    };
+  };
+  personalization: {
+    nameHandling: {
+      detectMultipleNames: boolean;
+      askPreference: boolean;
+      rememberPreference: boolean;
+      useConsistently: boolean;
+    };
+    culturalContext: {
+      region: string;
+      dialect: string;
+      formality: string;
+      expressions: string[];
+    };
+    userPreferences: {
+      trackInteractionStyle: boolean;
+      adaptTone: boolean;
+      rememberContext: boolean;
+      personalizeExamples: boolean;
+    };
+  };
+  security: {
+    dataHandling: {
+      anonymizePersonalData: boolean;
+      encryptSensitiveInfo: boolean;
+      retentionPolicy: string;
+      deletionPolicy: string;
+    };
+    accessControl: {
+      requireAuthentication: boolean;
+      validateDomain: string;
+      sessionTimeout: number; // minutos
+      maxSessionsPerUser: number;
+    };
+    contentFiltering: {
+      filterInappropriateContent: boolean;
+      detectSensitiveTopics: boolean;
+      redirectToHuman: boolean;
+    };
+  };
+}
+
+export const CONTEXT_ENGINEERING_CONFIG: ContextEngineeringConfigType = {
   // ============================================================================
   // CONFIGURACIÓN DE OBJETIVOS
   // ============================================================================
@@ -16,10 +299,9 @@ export const CONTEXT_ENGINEERING_CONFIG = {
       engagementLevel: { target: 0.9, min: 0.7 }
     },
     constraints: {
-      noJudgment: true,
-      noTechnicalAdvice: true,
-      noPersonalInfo: true,
-      timeLimit: 10 // minutos
+      timeLimit: { max: 10, unit: "minutos" },
+      responseLength: { max: 500, unit: "caracteres" },
+      userInterruptions: { max: 3 }
     }
   },
 

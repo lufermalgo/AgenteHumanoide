@@ -438,8 +438,8 @@ export class ContextManager {
    */
   generateContextualPrompt(
     situation: 'greeting' | 'question_intro' | 'response_processing' | 'follow_up' | 'closing',
-    userInput?: string,
-    additionalContext?: Record<string, any>
+    userInput?: string
+    // additionalContext?: Record<string, any>  // Comentado - no utilizado
   ): string {
     const context = this.getCurrentContext();
     

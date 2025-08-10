@@ -14,8 +14,8 @@ async function testAudioControlSystem() {
   console.log('🎵 Test 1: Sistema de Control de Audio');
   console.log('─'.repeat(50));
   
-  const contextManager = new ContextManager();
-  const promptEngine = new PromptEngine();
+  // const contextManager = new ContextManager();  // Comentado - no utilizado
+  // const promptEngine = new PromptEngine();  // Comentado - no utilizado
   
   try {
     // Simular múltiples llamadas de audio simultáneas

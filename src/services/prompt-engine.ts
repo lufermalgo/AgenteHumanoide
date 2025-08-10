@@ -375,7 +375,7 @@ export class PromptEngine {
    * Genera un prompt contextualizado para una situación específica
    */
   async generatePrompt(request: PromptRequest): Promise<PromptResponse> {
-    const { situation, userInput, context, options } = request;
+    const { situation, userInput, context } = request;
 
     // Actualizar contexto de sesión
     if (context) {
@@ -566,7 +566,7 @@ export class PromptEngine {
       metadata: {
         ...currentPrompt.metadata,
         timestamp: new Date(),
-        userIntent: intent
+        // userIntent: intent  // Comentado - propiedad no definida en el tipo
       }
     };
   }
