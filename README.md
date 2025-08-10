@@ -55,7 +55,7 @@ AgenteHumanoide/
 - Node.js 20+ 
 - npm o yarn
 - Firebase CLI
-- Cuenta Google Cloud (proyecto: `genai-385616`)
+- Cuenta Google Cloud (proyecto: `your_project_id`)
 
 ### 1. Clonar el Repositorio
 
@@ -80,16 +80,16 @@ Crear archivo `.env` en la raíz:
 
 ```env
 # Google Cloud Platform
-GOOGLE_PROJECT_ID=genai-385616
+GOOGLE_PROJECT_ID=your_project_id
 GOOGLE_APPLICATION_CREDENTIALS=./service-account-key.json
 
 # Firebase Configuration (Frontend)
 VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=genai-385616.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=genai-385616
-VITE_FIREBASE_STORAGE_BUCKET=genai-385616.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=36072227238
-VITE_FIREBASE_APP_ID=1:36072227238:web:c5c58b3fb150632fd24f67
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
 
 # Gemini API
 VITE_GEMINI_API_KEY=your_gemini_api_key
@@ -109,7 +109,7 @@ VITE_USE_FIRESTORE_EMULATOR=false
 firebase init
 
 # Conectar al proyecto
-firebase use genai-385616
+firebase use your_project_id
 ```
 
 ## 🏃‍♂️ Desarrollo Local
@@ -164,12 +164,12 @@ npx ts-node src/test/gemini-audio-test.ts
 
 ```bash
 # Probar endpoint generate
-curl -X POST http://localhost:5002/genai-385616/us-central1/generate \
+curl -X POST http://localhost:5002/your_project_id/us-central1/generate \
   -H 'Content-Type: application/json' \
   -d '{"systemPrompt":"Eres un asistente amigable.","userPrompt":"Di hola de forma cálida.","maxTokens":50}'
 
 # Probar endpoint TTS
-curl -X POST http://localhost:5002/genai-385616/us-central1/tts \
+curl -X POST http://localhost:5002/your_project_id/us-central1/tts \
   -H 'Content-Type: application/json' \
   -d '{"text":"Hola, soy Anita-AI"}'
 ```
@@ -368,7 +368,7 @@ pkill -f "vite"
 ```bash
 # Verificar configuración
 firebase projects:list
-firebase use genai-385616
+firebase use your_project_id
 ```
 
 ## 📞 Soporte

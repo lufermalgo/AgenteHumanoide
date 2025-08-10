@@ -3,8 +3,8 @@
 ## 🔧 Firebase Cloud Functions
 
 ### Base URL
-- **Desarrollo:** `http://localhost:5002/genai-385616/us-central1/`
-- **Producción:** `https://us-central1-genai-385616.cloudfunctions.net/`
+- **Desarrollo:** `http://localhost:5002/your_project_id/us-central1/`
+- **Producción:** `https://us-central1-your_project_id.cloudfunctions.net/`
 
 ---
 
@@ -32,7 +32,7 @@ Convierte texto a audio usando Gemini 2.5 Flash Preview TTS con voz "Kore" en es
 
 ### Ejemplo
 ```bash
-curl -X POST http://localhost:5002/genai-385616/us-central1/tts \
+curl -X POST http://localhost:5002/your_project_id/us-central1/tts \
   -H 'Content-Type: application/json' \
   -d '{"text":"Hola, soy Anita-AI. ¿Cómo estás hoy?"}' \
   --output response.wav
@@ -79,7 +79,7 @@ Transcribe audio a texto usando Gemini 1.5 Flash con optimización para español
 
 ### Ejemplo
 ```bash
-curl -X POST http://localhost:5002/genai-385616/us-central1/stt \
+curl -X POST http://localhost:5002/your_project_id/us-central1/stt \
   -H 'Content-Type: application/json' \
   -d '{
     "audioBase64": "UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIG2m98OScTgwOUarm7blmGgU7k9n1unEiBC13yO/eizEIHWq+8+OWT",
@@ -124,7 +124,7 @@ Genera respuestas dinámicas y empáticas usando Gemini 1.5 Flash con Context En
 
 ### Ejemplo
 ```bash
-curl -X POST http://localhost:5002/genai-385616/us-central1/generate \
+curl -X POST http://localhost:5002/your_project_id/us-central1/generate \
   -H 'Content-Type: application/json' \
   -d '{
     "systemPrompt": "Eres Anita-AI, un asistente empático y cercano...",

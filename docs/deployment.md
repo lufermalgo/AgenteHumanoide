@@ -31,9 +31,9 @@ Guía completa para desplegar el Agente Humanoide de Summan SAS a producción en
 
 ### URLs de Producción
 
-- **Frontend:** https://genai-385616.web.app
-- **API Base:** https://us-central1-genai-385616.cloudfunctions.net
-- **Admin:** https://genai-385616.web.app/admin
+- **Frontend:** https://your_project_id.web.app
+- **API Base:** https://us-central1-your_project_id.cloudfunctions.net
+- **Admin:** https://your_project_id.web.app/admin
 - **Emulator UI:** http://127.0.0.1:4001 (solo desarrollo)
 
 ---
@@ -58,16 +58,16 @@ node test-generative-system.js
 #### Archivo `.env.production`
 ```env
 # Google Cloud Platform
-GOOGLE_PROJECT_ID=genai-385616
+GOOGLE_PROJECT_ID=your_project_id
 GOOGLE_APPLICATION_CREDENTIALS=./service-account-key.json
 
 # Firebase Configuration
-VITE_FIREBASE_API_KEY=AIzaSyBNj3UtnSNoicuLgnEvM4GBKU0AL3o4lqM
-VITE_FIREBASE_AUTH_DOMAIN=genai-385616.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=genai-385616
-VITE_FIREBASE_STORAGE_BUCKET=genai-385616.firebasestorage.app
-VITE_FIREBASE_MESSAGING_SENDER_ID=36072227238
-VITE_FIREBASE_APP_ID=1:36072227238:web:c5c58b3fb150632fd24f67
+VITE_FIREBASE_API_KEY=your_firebase_api_key_here
+VITE_FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_project_id.firebasestorage.app
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+VITE_FIREBASE_APP_ID=your_firebase_app_id
 
 # Gemini API
 VITE_GEMINI_API_KEY=your_production_gemini_api_key
@@ -151,7 +151,7 @@ cd functions && npm run build && cd ..
 ```bash
 # Verificar configuración de Firebase
 firebase projects:list
-firebase use genai-385616
+firebase use your_project_id
 
 # Verificar reglas de seguridad
 firebase firestore:rules:get
@@ -196,7 +196,7 @@ firebase functions:log --only tts,stt,generate --limit 10
 #### Configurar Dominio Autorizado
 ```javascript
 // En Firebase Console > Authentication > Settings > Authorized domains
-// Agregar: genai-385616.web.app
+// Agregar: your_project_id.web.app
 ```
 
 #### Configurar OAuth
@@ -234,8 +234,8 @@ export const tts = functions.https.onRequest(async (req, res) => {
 // functions/src/index.ts
 const corsOptions = {
   origin: [
-    'https://genai-385616.web.app',
-    'https://genai-385616.firebaseapp.com',
+    'https://your_project_id.web.app',
+'https://your_project_id.firebaseapp.com',
     'http://localhost:3002' // Solo para desarrollo
   ],
   credentials: true
@@ -243,7 +243,7 @@ const corsOptions = {
 
 export const tts = functions.https.onRequest(async (req, res) => {
   // Configurar CORS para producción
-  res.set('Access-Control-Allow-Origin', 'https://genai-385616.web.app');
+  res.set('Access-Control-Allow-Origin', 'https://your_project_id.web.app');
   res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
@@ -372,7 +372,7 @@ jobs:
         repoToken: '${{ secrets.GITHUB_TOKEN }}'
         firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT }}'
         channelId: live
-        projectId: genai-385616
+        projectId: your_project_id
 ```
 
 ### 2. Variables de Entorno en GitHub
@@ -502,12 +502,12 @@ export const tts = functions
 
 ```bash
 # Test de endpoints principales
-curl -X POST https://us-central1-genai-385616.cloudfunctions.net/tts \
+curl -X POST https://us-central1-your_project_id.cloudfunctions.net/tts \
   -H 'Content-Type: application/json' \
   -d '{"text":"Test de producción"}' \
   --output test-tts.wav
 
-curl -X POST https://us-central1-genai-385616.cloudfunctions.net/generate \
+curl -X POST https://us-central1-your_project_id.cloudfunctions.net/generate \
   -H 'Content-Type: application/json' \
   -d '{"systemPrompt":"Test","userPrompt":"Hola","maxTokens":50}'
 ```
@@ -518,7 +518,7 @@ curl -X POST https://us-central1-genai-385616.cloudfunctions.net/generate \
 # Test de carga con Artillery
 npm install -g artillery
 
-artillery quick --count 100 --num 10 https://us-central1-genai-385616.cloudfunctions.net/generate
+artillery quick --count 100 --num 10 https://us-central1-your_project_id.cloudfunctions.net/generate
 ```
 
 ### 3. End-to-End Testing
@@ -570,8 +570,8 @@ npm run test:e2e:production
 - [Context Engineering](./context-engineering.md) - Configuración del agente
 
 ### Enlaces Útiles
-- [Firebase Console](https://console.firebase.google.com/project/genai-385616)
-- [Google Cloud Console](https://console.cloud.google.com/project/genai-385616)
+- [Firebase Console](https://console.firebase.google.com/project/your_project_id)
+- [Google Cloud Console](https://console.cloud.google.com/project/your_project_id)
 - [Firebase Documentation](https://firebase.google.com/docs)
 
 ---
