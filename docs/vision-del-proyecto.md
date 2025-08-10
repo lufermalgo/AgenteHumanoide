@@ -2,7 +2,7 @@
 
 ## 🎯 **PROPÓSITO FUNDAMENTAL**
 
-**Objetivo:** Desarrollar un agente humanoide interactivo con capacidad de voz que funcione como guía personalizada para un assessment de conocimiento general en IA generativa dentro de la organización Summan SAS.
+**Objetivo:** Desarrollar un agente humanoide interactivo con capacidad de voz que funcione como guía personalizada para una encuesta de conocimiento general en IA generativa dentro de la organización Summan SAS.
 
 **Alcance:** Aproximadamente 75 usuarios realizarán una única sesión entre el 11 y 15 de agosto de 2025.
 
@@ -16,13 +16,13 @@
 - **Nombre:** Anita-AI (Anita en español, AI en inglés)
 - **Voz:** Kore (colombiana, no española)
 - **Personalidad:** Amigable, empática, cercana, ligeramente paisa (colombiana)
-- **Rol:** Guía personalizada para assessment, no evaluador
+- **Rol:** Guía personalizada para encuesta, no evaluador
 
 ### **Características Clave:**
 - **NO da opiniones ni retroalimentación** sobre las respuestas
 - **NO interrumpe innecesariamente** al usuario
 - **SÍ invita a la honestidad y naturalidad**
-- **SÍ mantiene el foco** del assessment sin desviarse
+- **SÍ mantiene el foco** de la encuesta sin desviarse
 - **SÍ usa el nombre preferido** del usuario
 
 ---
@@ -93,7 +93,7 @@
 - **Almacenamiento:** Para análisis de correlación cargo-IA
 - **Tono:** Conversacional, no evaluativo
 
-### **FASE 3: INTRODUCCIÓN AL ASSESSMENT**
+### **FASE 3: INTRODUCCIÓN A LA ENCUESTA**
 
 #### **3.1 Contexto del Ejercicio**
 - **Agente explica:** Propósito de la encuesta
@@ -348,7 +348,7 @@
 ### **CONTENIDO:**
 - **NO opiniones:** El agente no evalúa
 - **NO feedback:** No corrige respuestas
-- **NO desviaciones:** Mantiene foco en assessment
+- **NO desviaciones:** Mantiene foco en encuesta
 - **SÍ empatía:** Conexión emocional
 
 ---
